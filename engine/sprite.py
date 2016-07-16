@@ -24,7 +24,7 @@ class Sprite(object):
 
 #EXPORT
 class AnimationSequence(object):
-    def __init__(self,name,base_vel):
+    def __init__(self,name,base_vel=100):
         self.name=name
         self.base_vel=base_vel
         self.duration=0
@@ -54,6 +54,23 @@ class AnimatedSprite(object):
         if name=='AnimDir':
             self.anim_dir=value
         self.flags[name]=value
+        
+    def get_longest_sequence(self):
+        mx=0
+        res=None
+        for name in self.sequences:
+            seq=self.sequences.get(name)
+            if len(seq)>mx:
+                mx=len(seq)
+                res=seq
+        return res
+        
+    def get_sequence(self,index):
+        for name in self.sequences.keys():
+            if index==0:
+                return self.sequences.get(name)
+            index-=1
+        return None
         
     def set_active_sequence(self,name):
         if name in self.sequences:

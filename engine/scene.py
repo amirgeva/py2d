@@ -28,8 +28,8 @@ class Scene(object):
             else:
                 after=e.get_rect()
                 if not utils.same_rect(before,after):
-                    if self.check_collisions(e,after):
-                        after=e.get_rect()                    
+                    self.check_collisions(e,after)
+                    after=e.get_rect()                    
                     self.rtree.move(e.get_id(),after)
         if len(dels)>0:
             for id in dels:
@@ -48,7 +48,6 @@ class Scene(object):
         id=entity.get_id()
         cands=self.rtree.search(rect)
         m1=entity.get_mask()
-        res=False
         for (cand_id,cand_rect) in cands:
             if cand_id!=id:
                 cand=self.entities.get(cand_id)
@@ -60,11 +59,7 @@ class Scene(object):
                 if c>0:
                     n1=m1.overlap_mask(m2,(ox,oy))
                     n2=m2.overlap_mask(m1,(-ox,-oy))
-                    print "{} : {}".format(m1.centroid(),n1.centroid())
-                    print "{} : {}".format(m2.centroid(),n2.centroid())
-                    #dx = Mask.overlap_area(othermask,(x+1,y)) - Mask.overlap_area(othermask,(x-1,y))
-                    #dy = Mask.overlap_area(othermask,(x,y+1)) - Mask.overlap_area(othermask,(x,y-1))
-                    #entity.collision
-        return res
+                    entity.collision(cand,n1.centroid())
+                    cand.collision(entity,n2.centroid())
         
             
