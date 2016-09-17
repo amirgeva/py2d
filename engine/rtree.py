@@ -148,7 +148,10 @@ def main():
     seed(1)
     t1=RTree()
     t2=BFTree()
+    fail=False
     for i in xrange(0,10000):
+        if fail:
+            break
         act=randint(0,100)
         if act<50:
             r=rand_rect()
@@ -165,18 +168,22 @@ def main():
             res2=t2.search(r)
             if len(res1)!=len(res2):
                 print "{}: Mismatch result length".format(i)
+                fail=True
                 break
             res1.sort(key=lambda t: t[0])
             res2.sort(key=lambda t: t[0])
             for j in xrange(0,len(res1)):
                 if res1[j][0]!=res2[j][0]:
                     print "{}: Mismatch found id".format(i)
+                    fail=True
                     break
         elif act<100:
             id=t2.get_random_id()
             r=rand_rect()
             t1.move(id,r)
             t2.move(id,r)
+    if not fail:
+        print "All tests successful"
     
 if __name__=='__main__':
     main()
