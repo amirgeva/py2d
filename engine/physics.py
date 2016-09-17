@@ -9,9 +9,9 @@ class RigidBody(object):
         self.prepos=Vector2(0.0,0.0)
 
     def advance(self,dt):
-        self.velocity+=dt*self.accel
         self.prepos=self.position
         self.position=self.position+dt*self.velocity
+        self.velocity+=dt*self.accel
         
     def get_position(self):
         return Vector2(int(self.position.x),int(self.position.y))
