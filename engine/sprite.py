@@ -7,10 +7,12 @@ from utils import parse_rect, parse_float
 class Sprite(object):
     def __init__(self,surface=None,rect=None,duration=0.0):
         self.surface=surface
+        if not rect:
+            rect=pygame.Rect(0,0,surface.get_width(),surface.get_height())
         self.rect=rect
         self.duration=duration
         self.mask=pygame.mask.from_surface(self.surface.subsurface(self.rect),1)
-        print self.mask.centroid()
+        #print self.mask.centroid()
         
     def draw(self,target,position):
         if self.surface:
@@ -24,9 +26,8 @@ class Sprite(object):
 
 #EXPORT
 class AnimationSequence(object):
-    def __init__(self,name,base_vel=100):
+    def __init__(self,name):
         self.name=name
-        self.base_vel=base_vel
         self.duration=0
         self.sprites=[]
         
