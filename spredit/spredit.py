@@ -6,18 +6,58 @@ sys.path.append('.')
 from engine import *
 import uis
 import pygame
+from pygame.math import Vector2
 import itertools
 
 qapp=None
 
+class SequenceSettingsDialog(QtGui.QDialog):
+    def __init__(self,seq,parent=None):
+        super(SequenceSettingsDialog,self).__init__(parent)
+        uis.loadDialog('seqset',self)
+        self.seq=seq
+        for spr in seq:
+            self.durationsList.addItem(str(spr.duration))
+            item=self.durationsList.item(self.durationsList.count()-1)
+            item.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsEditable|QtCore.Qt.ItemIsEnabled)
+        self.durationsList.itemChanged.connect(self.itemChanged)
+        
+    def itemChanged(self,item):
+        print "Item changed"
+        
+    def accept(self):
+        for i in xrange(0,self.durationsList.count()):
+            item=self.durationsList.item(i)
+            try:
+                val=float(item.text())
+                self.seq[i].duration=val
+            except ValueError:
+                pass
+        return super(SequenceSettingsDialog,self).accept()
+        
+
 class SequencesDialog(QtGui.QDialog):
-    def __init__(self,parent=None):
+    def __init__(self,sheet,parent=None):
         super(SequencesDialog,self).__init__(parent)
         uis.loadDialog('spriteseq',self)
+        self.sheet=sheet
         self.addButton.clicked.connect(self.addSequence)
         self.sequenceList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.sequenceList.customContextMenuRequested.connect(self.ctxMenu)
+        self.sequenceList.currentItemChanged.connect(self.changeCurrent)
         self.sprite=AnimatedSprite()
+        
+    def advance(self,dt):
+        if self.sprite:
+            self.sprite.advance(dt,Vector2(0.0,0.0))
+    
+    def draw(self,screen,pos):
+        if self.sprite:
+            self.sprite.draw(screen,pos)
+        
+    def changeCurrent(self,cur,prev):
+        if self.sprite:
+            self.sprite.set_active_sequence(self.getCurrentSequenceName())
         
     def addSequence(self):
         r=QtGui.QInputDialog.getText(None,"New Sequence","Enter Name")
@@ -25,21 +65,43 @@ class SequencesDialog(QtGui.QDialog):
             name=str(r[0])
             self.sequenceList.addItem(name)
             self.sprite.add_sequence(AnimationSequence(name))
-            
+            self.sequenceList.setCurrentRow(self.sequenceList.count()-1)
+
+    def addSprite(self,rect):
+        seq=self.getCurrentSequence()
+        if not seq is None:
+            seq.add_sprite(Sprite(self.sheet,rect,0.1))
+        else:
+            print "addSprite: no active sequence"
+
     def ctxMenu(self,pos):
         menu=QtGui.QMenu()
         menu.addAction(QtGui.QAction('Clear',self,triggered=self.clearSequence))
+        menu.addAction(QtGui.QAction('Edit',self,triggered=self.editSequence))
         menu.exec_(self.sequenceList.mapToGlobal(pos))
         
+    def getCurrentSequenceName(self):
+        item=self.sequenceList.currentItem()
+        if item:
+            return str(item.text())
+        return ""
+        
     def getCurrentSequence(self):
-        return str(self.sequenceList.currentItem().text())
+        name=self.getCurrentSequenceName()
+        if name:
+            return self.sprite.get_sequence_by_name(name)
+        return None
         
     def clearSequence(self):
-        name=self.getCurrentSequence()
-        if name:
-            seq=self.sprite.get_sequence_by_name(name)
-            if seq:
-                seq.clear()
+        seq=self.getCurrentSequence()
+        if seq:
+            seq.clear()
+            
+    def editSequence(self):
+        seq=self.getCurrentSequence()
+        if seq:
+            d=SequenceSettingsDialog(seq)
+            d.exec_()
             
     
 
@@ -77,13 +139,14 @@ class SprEdit(Application):
     def __init__(self,filename):
         super(SprEdit,self).__init__((1280,720))
         self.sheet=None
+        self.seqdlg=None
         self.rects=[]
         self.bg=get_surface('checkers')
         if filename.endswith('.xml'):
             self.load_sprite(filename)
         else:
             self.load_sheet(filename)
-        self.seqdlg=SequencesDialog()
+        self.seqdlg=SequencesDialog(self.sheet)
         self.seqdlg.show()
             
     def load_sheet(self,filename):
@@ -142,6 +205,16 @@ class SprEdit(Application):
             x=offset[0]
             y=y+size[1]+offset[1]
             
+    def find_rect(self,pos):
+        for r in self.rects:
+            if r.collidepoint(pos):
+                return r
+        return None
+            
+    def onClick(self,pos):
+        r=self.find_rect(pos)
+        if r:
+            self.seqdlg.addSprite(r)
         
     def draw(self):        
         self.screen.blit(self.bg,(0,0))
@@ -149,9 +222,12 @@ class SprEdit(Application):
             self.screen.blit(self.sheet,(0,0))
         for r in self.rects:
             pygame.draw.rect(self.screen,pygame.Color(255,0,0,255),r,1)
+        if self.seqdlg:
+            self.seqdlg.draw(self.screen,(self.sheet.get_width(),0))
         
     def loop(self,dt):
         qapp.processEvents()
+        self.seqdlg.advance(dt)
         self.draw()
 
 def main():
