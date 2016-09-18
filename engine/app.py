@@ -9,7 +9,7 @@ class Application(object):
         self.clock = pygame.time.Clock()
         self.fps=30
 
-    def dt(self):
+    def calc_dt(self):
         return 0.001*self.clock.tick(self.fps)        
         
     def flip(self):
@@ -31,10 +31,10 @@ class Application(object):
                     self.onKey(event.key)
         return True
         
-    def loop(self):
+    def loop(self,dt):
         pass
         
     def run(self):
         while self.handleEvents():
-            self.loop()
+            self.loop(self.calc_dt())
             self.flip()

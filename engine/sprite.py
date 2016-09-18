@@ -34,6 +34,10 @@ class AnimationSequence(object):
     def add_sprite(self,sprite):
         self.sprites.append(sprite)
         self.duration=self.duration+sprite.duration
+
+    def clear(self):
+        self.sprites=[]
+        self.duration=0
         
     def __getitem__(self,index):
         return self.sprites[index]
@@ -66,7 +70,10 @@ class AnimatedSprite(object):
                 res=seq
         return res
         
-    def get_sequence(self,index):
+    def get_sequence_by_name(self,name):        
+        return self.sequences.get(name)
+        
+    def get_sequence_by_index(self,index):
         for name in self.sequences.keys():
             if index==0:
                 return self.sequences.get(name)
