@@ -20,15 +20,21 @@ class Application(object):
         
     def onKey(self,key):
         pass
+    
+    def onClick(self,pos):
+        pass
 
     def handleEvents(self):
         for event in pygame.event.get():
-            if not hasattr(event, 'key'): continue
-            if event.key == K_ESCAPE:
-                return False
-            else:
-                if event.type==2:
-                    self.onKey(event.key)
+            if hasattr(event, 'key'):
+                if event.key == K_ESCAPE:
+                    return False
+                else:
+                    if event.type==2:
+                        self.onKey(event.key)
+            elif event.type==pygame.MOUSEBUTTONDOWN:
+                self.onClick(event.pos)
+            #elif hasattr(event,)
         return True
         
     def loop(self,dt):
