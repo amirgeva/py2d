@@ -84,6 +84,7 @@ class AnimatedSprite(object):
         if name in self.sequences:
             self.active_sequence=self.sequences.get(name)
             self.dt=0.0
+            self.cur_sprite=0
         
     def add_sequence(self,seq):
         self.sequences[seq.name]=seq
@@ -95,14 +96,15 @@ class AnimatedSprite(object):
             return abs(velocity.x)
         if self.anim_dir=='Y': 
             return abs(velocity.y)
-        return velocity.magnitude()
+        return velocity.length()
         
     def advance(self,dt,velocity):
         axial_velocity=self.calculate_axial_velocity(velocity)
         if self.active_sequence:
-            mult=0.0
-            if self.active_sequence.base_vel>0 and axial_velocity>0.001: 
-                mult=axial_velocity / self.active_sequence.base_vel;
+            mult=1
+            if hasattr(self.active_sequence,'base_vel'):
+                if self.active_sequence.base_vel>0 and axial_velocity>0.001: 
+                    mult=axial_velocity / self.active_sequence.base_vel;
             self.dt = self.dt + dt*mult
             spr = self.active_sequence[self.cur_sprite]
             while self.dt >= spr.duration:
