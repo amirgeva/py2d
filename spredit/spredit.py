@@ -10,6 +10,7 @@ from pygame.math import Vector2
 import itertools
 
 qapp=None
+sheet_name=""
 
 class SequenceSettingsDialog(QtGui.QDialog):
     def __init__(self,seq,parent=None):
@@ -41,11 +42,13 @@ class SequencesDialog(QtGui.QDialog):
         super(SequencesDialog,self).__init__(parent)
         uis.loadDialog('spriteseq',self)
         self.sheet=sheet
+        self.filename=""
         self.addButton.clicked.connect(self.addSequence)
+        self.saveButton.clicked.connect(self.saveSprite)
         self.sequenceList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.sequenceList.customContextMenuRequested.connect(self.ctxMenu)
         self.sequenceList.currentItemChanged.connect(self.changeCurrent)
-        self.sprite=AnimatedSprite()
+        self.sprite=AnimatedSprite(sheet_name)
         
     def advance(self,dt):
         if self.sprite:
@@ -58,6 +61,14 @@ class SequencesDialog(QtGui.QDialog):
     def changeCurrent(self,cur,prev):
         if self.sprite:
             self.sprite.set_active_sequence(self.getCurrentSequenceName())
+            
+    def saveSprite(self):
+        if not self.filename:
+            self.filename=QtGui.QFileDialog.getSaveFileName(filter="XML Files (*.xml)")
+            if not self.filename:
+                return
+        s=self.sprite.serialize()
+        open(self.filename,'w').write(s)
         
     def addSequence(self):
         r=QtGui.QInputDialog.getText(None,"New Sequence","Enter Name")
@@ -235,7 +246,9 @@ def main():
         print "Usage: spredit.py <image>|<sprite>"
     global qapp
     qapp=QtGui.QApplication(sys.argv)
-    app=SprEdit(sys.argv[1])
+    global sheet_name
+    sheet_name=sys.argv[1]
+    app=SprEdit(sheet_name)
     app.run()
 
 if __name__=='__main__':

@@ -1,7 +1,8 @@
 import pygame
 import dom
 from cache import get_surface
-from utils import parse_rect, parse_float
+from utils import parse_rect, parse_float, format_rect
+from xml.dom.minidom import Element, parseString
 
 #EXPORT
 class Sprite(object):
@@ -29,6 +30,7 @@ class AnimationSequence(object):
     def __init__(self,name):
         self.name=name
         self.duration=0
+        self.base_vel=1
         self.sprites=[]
         
     def add_sprite(self,sprite):
@@ -47,7 +49,8 @@ class AnimationSequence(object):
 
 #EXPORT
 class AnimatedSprite(object):
-    def __init__(self):
+    def __init__(self,sheet):
+        self.sheet=sheet
         self.sequences={}
         self.flags={}
         self.active_sequence=None
@@ -128,6 +131,22 @@ class AnimatedSprite(object):
         if self.active_sequence:
             return self.active_sequence[self.cur_sprite].get_rect()
         return pygame.Rect(0,0,1,1)
+        
+    def serialize(self):
+        root=parseString('<AnimatedSprite/>')
+        for seq_name in self.sequences:
+            seq=self.sequences.get(seq_name)
+            el=root.createElement('Sequence')
+            el.setAttribute('Name',seq_name)
+            el.setAttribute('BaseVelocity',str(seq.base_vel))
+            root.appendChild(el)
+            for spr in seq.sprites:
+                fr_el=root.createElement('Frame')
+                fr_el.setAttribute('Image',self.sheet)
+                fr_el.setAttribute('Rect',format_rect(spr.rect))
+                fr_el.setAttribute('Duration',str(1000*spr.duration))
+                el.appendChild(fr_el)
+        return root.toprettyxml()
 
 def load(root):
     res=AnimatedSprite()

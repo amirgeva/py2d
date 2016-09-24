@@ -4,6 +4,9 @@ import itertools
 def same_rect(r1,r2):
     return r1.left==r2.left and r1.top==r2.top and r1.right==r2.right and r1.bottom==r2.bottom
 
+def format_rect(r):
+    return "{},{},{},{}".format(r.x,r.y,r.x+r.w,r.y+r.h)
+
 def parse_rect(s):
     try:
         c=s.split(',')
