@@ -3,6 +3,7 @@ import dom
 from cache import get_surface
 from utils import parse_rect, parse_float, format_rect
 from xml.dom.minidom import Element, parseString
+import json
 
 #EXPORT
 class Sprite(object):
@@ -25,6 +26,21 @@ class Sprite(object):
     def get_rect(self):
         return pygame.Rect(0,0,self.rect.width,self.rect.height)
 
+    def serialize(self):
+        obj = { 
+            'Rect'     : format_rect(self.rect),
+            'Duration' : str(1000*self.duration)
+        }
+        return obj
+        
+    @staticmethod
+    def deserialize(surface, obj):
+        rect=parse_rect(obj['Rect'])
+        dur=0.001*parse_float(obj['Duration'])
+        return Sprite(surf,rect,dur)
+        
+
+
 #EXPORT
 class AnimationSequence(object):
     def __init__(self,name):
@@ -40,6 +56,23 @@ class AnimationSequence(object):
     def clear(self):
         self.sprites=[]
         self.duration=0
+        
+    def serialize(self):
+        frames = [fr.serialize() for fr in self.sprites]
+        obj = { 
+            'Name' : self.name,
+            'BaseVelocity' : str(self.base_vel),
+            'Frames' : frames
+        }
+        return obj
+        
+    @staticmethod
+    def deserialize(surface, seq):
+        s=AnimationSequence(seq['Name'],parse_float(seq['BaseVelocity']))
+        for fr in seq['Frames']:
+            s.add_sprite(Sprite.deserialize(surface, fr))
+        return s
+
         
     def __getitem__(self,index):
         return self.sprites[index]
@@ -133,22 +166,27 @@ class AnimatedSprite(object):
         return pygame.Rect(0,0,1,1)
         
     def serialize(self):
-        root=parseString('<AnimatedSprite/>')
-        for seq_name in self.sequences:
-            seq=self.sequences.get(seq_name)
-            el=root.createElement('Sequence')
-            el.setAttribute('Name',seq_name)
-            el.setAttribute('BaseVelocity',str(seq.base_vel))
-            root.appendChild(el)
-            for spr in seq.sprites:
-                fr_el=root.createElement('Frame')
-                fr_el.setAttribute('Image',self.sheet)
-                fr_el.setAttribute('Rect',format_rect(spr.rect))
-                fr_el.setAttribute('Duration',str(1000*spr.duration))
-                el.appendChild(fr_el)
-        return root.toprettyxml()
+        sequences = [s.serialize() for s in self.sequences.values()]
+        obj = { 
+            'Image' : self.sheet,
+            'Sequences' : sequences,
+            'Flags': self.flags
+        }
+        return json.dumps(obj, indent=4)
+        
+    @staticmethod
+    def deserialize(obj):
+        res=AnimatedSprite(obj['Image'])
+        surface = get_surface(obj['Image'])
+        flags = obj['Flags']
+        for key in flags:
+            res.add_flag(key,flags[key])
+        for seq in obj['Sequences']:
+            s=AnimationSequence.deserialize(surface, seq)
+            res.add_sequence(s)
+        return res
 
-def load(root):
+def load_xml(root):
     res=AnimatedSprite()
     for flag in root.children('Flag'):
         res.add_flag(flag['Name'],flag['Value'])
@@ -163,13 +201,22 @@ def load(root):
     return res
     
 #EXPORT
-def load_file(filename):
+def load_xml_file(filename):
     return load(dom.parseFile(filename))
     
 #EXPORT
-def load_str(s):
+def load_xml_str(s):
     return load(dom.parseString(filename))
 
+#EXPORT
+def load_file(filename):
+    obj = json.load(filename)
+    return AnimatedSprite.deserialize(obj)
+    
+#EXPORT
+def load_str(s):
+    obj = json.loads(filename)
+    return AnimatedSprite.deserialize(obj)
             
         
     
