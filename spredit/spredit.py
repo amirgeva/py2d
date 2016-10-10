@@ -244,12 +244,13 @@ class SprEdit(Application):
 def main():
     if len(sys.argv)<2:
         print "Usage: spredit.py <image>|<sprite>"
-    global qapp
-    qapp=QtGui.QApplication(sys.argv)
-    global sheet_name
-    sheet_name=sys.argv[1]
-    app=SprEdit(sheet_name)
-    app.run()
+    else:
+        global qapp
+        qapp=QtGui.QApplication(sys.argv)
+        global sheet_name
+        sheet_name=sys.argv[1]
+        app=SprEdit(sheet_name)
+        app.run()
 
 if __name__=='__main__':
     main()
