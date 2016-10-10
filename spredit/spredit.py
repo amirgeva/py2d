@@ -64,7 +64,7 @@ class SequencesDialog(QtGui.QDialog):
             
     def saveSprite(self):
         if not self.filename:
-            self.filename=QtGui.QFileDialog.getSaveFileName(filter="XML Files (*.xml)")
+            self.filename=QtGui.QFileDialog.getSaveFileName(filter="JSON Files (*.json)")
             if not self.filename:
                 return
         s=self.sprite.serialize()
