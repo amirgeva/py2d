@@ -11,7 +11,7 @@ import itertools
 
 qapp=None
 sheet_name=""
-
+#osnat
 class SequenceSettingsDialog(QtGui.QDialog):
     def __init__(self,seq,parent=None):
         super(SequenceSettingsDialog,self).__init__(parent)
