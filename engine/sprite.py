@@ -136,12 +136,14 @@ class AnimatedSprite(object):
         
     def advance(self,dt,velocity):
         axial_velocity=self.calculate_axial_velocity(velocity)
-        if self.active_sequence:
+        if self.active_sequence and len(self.active_sequence)>0:
             mult=1
             if hasattr(self.active_sequence,'base_vel'):
                 if self.active_sequence.base_vel>0 and axial_velocity>0.001: 
                     mult=axial_velocity / self.active_sequence.base_vel;
             self.dt = self.dt + dt*mult
+            if self.cur_sprite>=len(self.active_sequence):
+                self.cur_sprite=0
             spr = self.active_sequence[self.cur_sprite]
             while self.dt >= spr.duration:
                 self.dt = self.dt - spr.duration
