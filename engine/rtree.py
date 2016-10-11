@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import pygame
 from random import randint, seed
 
@@ -81,7 +82,7 @@ class RTree(object):
     def __init__(self):
         self.root=RTreeNode()
         self.directory={}
-        
+
     def add(self,id,rect):
         self.remove(id)
         nodes=self.root.add_item(id,rect)
@@ -91,14 +92,13 @@ class RTree(object):
                     self.directory[item[0]]=child
         else:
             self.directory[id]=nodes
-    
+
     def move(self,id,rect):
         if id in self.directory:
             node=self.directory.get(id)
             if not node.move(id,rect):
                 self.remove(id)
                 self.add(id,rect)
-                
 
     def remove(self,id):
         if id in self.directory:
@@ -141,7 +141,7 @@ class BFTree(object):
         return ids[randint(0,len(ids)-1)]
     
     
-def main():    
+def unit_test():    
     def rand_rect():
         return pygame.Rect(randint(0,1000),randint(0,1000),randint(32,32),randint(32,32))
     pygame.init()
@@ -186,4 +186,4 @@ def main():
         print "All tests successful"
     
 if __name__=='__main__':
-    main()
+    unit_test()
