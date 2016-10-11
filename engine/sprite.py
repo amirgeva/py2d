@@ -37,16 +37,16 @@ class Sprite(object):
     def deserialize(surface, obj):
         rect=parse_rect(obj['Rect'])
         dur=0.001*parse_float(obj['Duration'])
-        return Sprite(surf,rect,dur)
+        return Sprite(surface,rect,dur)
         
 
 
 #EXPORT
 class AnimationSequence(object):
-    def __init__(self,name):
+    def __init__(self,name,base_vel=1):
         self.name=name
         self.duration=0
-        self.base_vel=1
+        self.base_vel=base_vel
         self.sprites=[]
         
     def add_sprite(self,sprite):
@@ -202,21 +202,30 @@ def load_xml(root):
     
 #EXPORT
 def load_xml_file(filename):
-    return load(dom.parseFile(filename))
+    return load_xml(dom.parseFile(filename))
     
 #EXPORT
 def load_xml_str(s):
-    return load(dom.parseString(filename))
+    return load_xml(dom.parseString(s))
 
 #EXPORT
-def load_file(filename):
-    obj = json.load(filename)
+def load_json_file(filename):
+    obj = json.load(open(filename,"r"))
     return AnimatedSprite.deserialize(obj)
     
 #EXPORT
-def load_str(s):
-    obj = json.loads(filename)
+def load_json_str(s):
+    obj = json.loads(s)
     return AnimatedSprite.deserialize(obj)
             
-        
+#EXPORT
+def load_file(filename):
+    return load_json_file(filename)
+    
+#EXPORT
+def load_str(s):
+    return load_json_str(s)
+    
+            
+
     
