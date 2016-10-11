@@ -29,14 +29,6 @@ class LargeWidget(QtGui.QWidget):
                 blue=((x+31)*(y+37))%255
                 color=QtGui.QColor(red,green,blue)
                 qp.fillRect(QtCore.QRect(x,y,TILE_SIZE,TILE_SIZE),color)
-                #self.color=QtGui.QColor(random.randint(0,255),random.randint(0,255),random.randint(0,255))
-#        TILE_SIZE=10
-#        rt=QtCore.QRect(r.left()/TILE_SIZE,r.top()/TILE_SIZE,r.width()/TILE_SIZE+1,r.height()/TILE_SIZE+1)
-#        for x in xrange(rt.left()-2,rt.right()+2):
-#            if x>=0 and x<100:
-#                for y in xrange(rt.top()-2,rt.bottom()+2):
-#                    if y>=0 and y<100:
-#                        qp.fillRect(x*10,r.top(),10,r.bottom(),QtGui.QColor(x*2,x*2,x*2))
         qp.drawLine(0,0,1000,1000)
         qp.end()
         
