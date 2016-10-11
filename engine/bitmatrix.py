@@ -3,13 +3,11 @@ from bitarray import bitarray
 
 
 class BitMatrix(object):
-    def __init__(self,width,height):
+    def __init__(self,width,height,init=True):
         self.sizes=(width,height)
-        self.rows=[None]*height
-        for i in xrange(0,height):
-            row=bitarray(width)
-            row.setall(False)
-            self.rows[i]=row
+        self.rows=[bitarray(width) for i in xrange(0,height)]
+        if init:
+            self.clear()
         
     def width(self):
         return self.sizes[0]
