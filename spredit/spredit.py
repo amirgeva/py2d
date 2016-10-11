@@ -38,7 +38,7 @@ class SequenceSettingsDialog(QtGui.QDialog):
         
 
 class SequencesDialog(QtGui.QDialog):
-    def __init__(self,sheet,parent=None):
+    def __init__(self,sheet,sprite,parent=None):
         super(SequencesDialog,self).__init__(parent)
         uis.loadDialog('spriteseq',self)
         self.sheet=sheet
@@ -48,7 +48,13 @@ class SequencesDialog(QtGui.QDialog):
         self.sequenceList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.sequenceList.customContextMenuRequested.connect(self.ctxMenu)
         self.sequenceList.currentItemChanged.connect(self.changeCurrent)
-        self.sprite=AnimatedSprite(sheet_name)
+        if sprite:
+            self.sprite=sprite
+            for seq in self.sprite.sequences:
+                self.sequenceList.addItem(seq)
+            self.sequenceList.setCurrentRow(0)
+        else:
+            self.sprite=AnimatedSprite(sheet_name)
         
     def advance(self,dt):
         if self.sprite:
@@ -150,15 +156,20 @@ class SprEdit(Application):
     def __init__(self,filename):
         super(SprEdit,self).__init__((1280,720))
         self.sheet=None
+        self.sprite=None
         self.seqdlg=None
         self.rects=[]
         self.bg=get_surface('checkers')
-        if filename.endswith('.xml'):
+        if filename.endswith('.json'):
             self.load_sprite(filename)
         else:
             self.load_sheet(filename)
-        self.seqdlg=SequencesDialog(self.sheet)
+        self.seqdlg=SequencesDialog(self.sheet,self.sprite)
         self.seqdlg.show()
+        
+    def load_sprite(self,filename):
+        self.sprite=load_file(filename)
+        self.load_sheet(self.sprite.sheet)
             
     def load_sheet(self,filename):
         self.sheet=get_surface(filename)
@@ -171,8 +182,8 @@ class SprEdit(Application):
                 self.manual_alpha(parse_color(d.Color.text()))
             elif d.type=='Auto':
                 self.auto_alpha()
-            else:
-                self.sheet=None
+#            else:
+#                self.sheet=None
             if d.grid and self.sheet:
                 self.grid_rects(parse_point(d.Offset.text()),parse_point(d.Size.text()))
 
