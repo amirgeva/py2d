@@ -58,6 +58,8 @@ class RTreeNode(object):
         
     def search(self,rect):
         res=[]
+        if not self.rect:
+            return res
         if rect.colliderect(self.rect):
             for i in self.items:
                 if i[1].colliderect(rect):
