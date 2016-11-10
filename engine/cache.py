@@ -1,6 +1,5 @@
 import pygame
-
-surfaces={}
+from functools import lru_cache
 
 def generate_checkers():
     s=pygame.Surface((1920,1080),pygame.HWSURFACE | pygame.SRCALPHA, 32)
@@ -17,13 +16,11 @@ def generate_checkers():
             
 
 #EXPORT
+@lru_cache(32)
 def get_surface(filename):
-    if filename in surfaces:
-        return surfaces.get(filename)
     if filename=='checkers':
         s=generate_checkers()
     else:
         s=pygame.image.load(filename)
         s=s.convert_alpha()
-    surfaces[filename]=s
     return s
