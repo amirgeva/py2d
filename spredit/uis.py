@@ -6,6 +6,10 @@ import re
 import inspect
 import importlib
 
+pyuic4_ext=''
+if os.name=='nt':
+    pyuic4_ext='.bat'
+
 def loadDialog(name,dlg=None):
     module=importlib.import_module('gen.'+name)
     for name,obj in inspect.getmembers(module):
@@ -24,7 +28,7 @@ def generate():
         base=(os.path.splitext(uiName))[0]
         inpath=os.path.join('uis',uiName)
         outpath=os.path.join('gen',base+".py")
-        call(['pyuic4','-o',outpath,inpath])
+        call(['pyuic4'+pyuic4_ext,'-o',outpath,inpath])
         dlg='dlg'
         f=open(outpath,"r")
         lines=f.readlines()

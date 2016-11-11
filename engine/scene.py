@@ -45,6 +45,7 @@ class Scene(object):
                 e.draw(view)
 
     def check_collisions(self,entity,rect):
+        return
         id=entity.get_id()
         cands=self.rtree.search(rect)
         m1=entity.get_mask()

@@ -39,3 +39,6 @@ class Entity(RigidBody):
         
     def get_mask(self):
         return self.anim.get_mask()
+    
+    def collision(self,other,col_point):
+        pass

@@ -228,6 +228,28 @@ def load_file(filename):
 def load_str(s):
     return load_json_str(s)
     
-            
+#EXPORT
+def generate_blocks_sprite(filename,w,h,x0,y0,padx,pady):
+    s=get_surface(filename)
+    x=x0
+    y=y0
+    anim=AnimatedSprite(filename)
+    i=0
+    j=0
+    while (y+h)<s.get_height():
+        while (x+w)<s.get_width():
+            name='{},{}'.format(i,j)
+            print name
+            seq=AnimationSequence(name)
+            seq.add_sprite(Sprite(s,pygame.Rect(x,y,w,h)))
+            anim.add_sequence(seq)
+            x+=(w+padx)
+            j+=1
+        x=x0
+        y+=(h+pady)
+        i+=1
+        j=0
+    return anim
+    
 
     
