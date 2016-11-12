@@ -17,6 +17,9 @@ class Entity(RigidBody):
         self.id=generate_id()
         self.dynamic=True
         
+    def get_type(self):
+        return 'Entity'
+        
     def is_dynamic(self):
         return self.dynamic
         
