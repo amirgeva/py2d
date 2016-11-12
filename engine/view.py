@@ -12,6 +12,9 @@ class View(object):
     def offset(self,d):
         self.rect.move_ip(d[0],d[1])
         
+    def get_position(self):
+        return self.rect.topleft
+        
     def set_position(self,pos):
         self.rect=pygame.Rect(pos.x,pos.y,self.rect.width,self.rect.height)
         
