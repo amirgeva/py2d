@@ -1,0 +1,70 @@
+{
+    "Image": "boy.png", 
+    "Flags": {}, 
+    "Sequences": [
+        {
+            "Frames": [
+                {
+                    "Duration": "100.0", 
+                    "Rect": "404,162,440,220"
+                }
+            ], 
+            "BaseVelocity": "100", 
+            "Name": "sleft"
+        }, 
+        {
+            "Frames": [
+                {
+                    "Duration": "100.0", 
+                    "Rect": "400,6,438,64"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "268,4,300,64"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "138,6,174,64"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "4,4,42,64"
+                }
+            ], 
+            "BaseVelocity": "100", 
+            "Name": "right"
+        }, 
+        {
+            "Frames": [
+                {
+                    "Duration": "100.0", 
+                    "Rect": "342,161,378,219"
+                }
+            ], 
+            "BaseVelocity": "100", 
+            "Name": "sright"
+        }, 
+        {
+            "Frames": [
+                {
+                    "Duration": "100.0", 
+                    "Rect": "11,76,49,134"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "149,74,181,134"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "275,76,311,134"
+                }, 
+                {
+                    "Duration": "100.0", 
+                    "Rect": "407,74,445,134"
+                }
+            ], 
+            "BaseVelocity": "100", 
+            "Name": "left"
+        }
+    ]
+}
