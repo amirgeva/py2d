@@ -23,6 +23,9 @@ class Sprite(object):
     def get_mask(self):
         return self.mask
         
+    def get_height(self):
+        return self.mask.get_size()[1]
+        
     def get_rect(self):
         return pygame.Rect(0,0,self.rect.width,self.rect.height)
 
@@ -116,8 +119,13 @@ class AnimatedSprite(object):
             index-=1
         return None
         
+    def get_active_sequence_name(self):
+        if not self.active_sequence:
+            return ''
+        return self.active_sequence.name
+        
     def set_active_sequence(self,name):
-        if name in self.sequences:
+        if name!=self.get_active_sequence_name() and name in self.sequences:
             self.active_sequence=self.sequences.get(name)
             self.dt=0.0
             self.cur_sprite=0
@@ -136,12 +144,15 @@ class AnimatedSprite(object):
         
     def advance(self,dt,velocity):
         axial_velocity=self.calculate_axial_velocity(velocity)
+        #print "axial={}".format(axial_velocity)
         if self.active_sequence and len(self.active_sequence)>0:
             mult=1
             if hasattr(self.active_sequence,'base_vel'):
                 if self.active_sequence.base_vel>0 and axial_velocity>0.001: 
                     mult=axial_velocity / self.active_sequence.base_vel;
+            #print "mult={}".format(mult)
             self.dt = self.dt + dt*mult
+            #print "self.dt={}".format(self.dt)
             if self.cur_sprite>=len(self.active_sequence):
                 self.cur_sprite=0
             spr = self.active_sequence[self.cur_sprite]
@@ -151,6 +162,13 @@ class AnimatedSprite(object):
                 if self.cur_sprite>=len(self.active_sequence):
                     self.cur_sprite=0
         return True
+        
+    def get_current_height(self):
+        if self.active_sequence:
+            spr = self.active_sequence[self.cur_sprite]
+            return spr.get_height()
+        return 0
+            
         
     def draw(self,target,position):
         if self.active_sequence:
