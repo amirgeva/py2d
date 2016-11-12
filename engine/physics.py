@@ -7,11 +7,14 @@ class RigidBody(object):
         self.velocity=Vector2(0.0,0.0)
         self.position=Vector2(0.0,0.0)
         self.prepos=Vector2(0.0,0.0)
+        
+    def get_external_force(self):
+        return Vector2(0,0)
 
     def advance(self,dt):
         self.prepos=self.position
         self.position=self.position+dt*self.velocity
-        self.velocity+=dt*self.accel
+        self.velocity+=dt*(self.accel+self.get_external_force())
         
     def get_position(self):
         return Vector2(int(self.position.x),int(self.position.y))
@@ -19,8 +22,14 @@ class RigidBody(object):
     def set_position(self,x,y):
         self.position=Vector2(x,y)
         
+    def get_velocity(self):
+        return Vector2(self.velocity.x,self.velocity.y)
+        
     def set_velocity(self,vx,vy):
         self.velocity=Vector2(vx,vy)
+        
+    def get_accel(self):
+        return Vector2(self.accel.x,self.accel.y)
         
     def set_accel(self,ax,ay):
         self.accel=Vector2(ax,ay)
