@@ -67,6 +67,9 @@ class SequencesDialog(QtGui.QDialog):
     def changeCurrent(self,cur,prev):
         if self.sprite:
             self.sprite.set_active_sequence(self.getCurrentSequenceName())
+
+    def condenseSheet(self):
+        pass
             
     def saveSprite(self):
         if not self.filename:
