@@ -12,11 +12,12 @@ for fname in files:
     export=False
     for line in open(fname,'r').readlines():
         if export:
-            export=False
-            m=re.match(sym_pat,line)
-            if m:
-                name=m.groups()[0]
-                names.append((base,name))
+            if not line.startswith('@'):
+                export=False
+                m=re.match(sym_pat,line)
+                if m:
+                    name=m.groups()[0]
+                    names.append((base,name))
         if line.startswith('#EXPORT'):
             export=True
 f=open('__init__.py','w')

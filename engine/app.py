@@ -42,5 +42,6 @@ class Application(object):
         
     def run(self):
         while self.handleEvents():
+            self.keys=pygame.key.get_pressed()
             self.loop(self.calc_dt())
             self.flip()

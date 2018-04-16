@@ -8,6 +8,7 @@ class Scene(object):
     def __init__(self):
         self.entities={}
         self.dynamics=set()
+        self.statics=set()
         self.rtree=RTree()
         
     def add(self,entity):
@@ -15,6 +16,8 @@ class Scene(object):
         self.entities[id]=entity
         if entity.is_dynamic():
             self.dynamics.add(id)
+        else:
+            self.statics.add(id)
         r=entity.get_rect()
         self.rtree.add(id,r)
         
@@ -39,7 +42,10 @@ class Scene(object):
 
     def draw(self,view):
         visible=self.rtree.search(view.get_rect())
-        for (id,rect) in visible:
+        vis_id=[v[0] for v in visible];
+        ids=[id for id in vis_id if id in self.statics]
+        ids.extend([id for id in vis_id if id not in self.statics])
+        for id in ids:
             e=self.entities.get(id)
             if e:
                 e.draw(view)

@@ -24,7 +24,7 @@ class SequenceSettingsDialog(QtGui.QDialog):
         self.durationsList.itemChanged.connect(self.itemChanged)
         
     def itemChanged(self,item):
-        print "Item changed"
+        print("Item changed")
         
     def accept(self):
         for i in xrange(0,self.durationsList.count()):
@@ -92,7 +92,7 @@ class SequencesDialog(QtGui.QDialog):
         if not seq is None:
             seq.add_sprite(Sprite(self.sheet,rect,0.1))
         else:
-            print "addSprite: no active sequence"
+            print("addSprite: no active sequence")
 
     def ctxMenu(self,pos):
         menu=QtGui.QMenu()
@@ -257,7 +257,7 @@ class SprEdit(Application):
 
 def main():
     if len(sys.argv)<2:
-        print "Usage: spredit.py <image>|<sprite>"
+        print("Usage: spredit.py <image>|<sprite>")
     else:
         global qapp
         qapp=QtGui.QApplication(sys.argv)

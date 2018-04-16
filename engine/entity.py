@@ -17,6 +17,9 @@ class Entity(RigidBody):
         self.id=generate_id()
         self.dynamic=True
         
+    def get_type(self):
+        return 'Entity'
+        
     def is_dynamic(self):
         return self.dynamic
         
@@ -39,3 +42,6 @@ class Entity(RigidBody):
         
     def get_mask(self):
         return self.anim.get_mask()
+    
+    def collision(self,other,col_point):
+        pass
