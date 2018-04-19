@@ -1,47 +1,52 @@
-import pygame
-from pygame.locals import *
+import oglblit
+import time
 
-#EXPORT
+
+# EXPORT
 class Application(object):
-    def __init__(self,res=(640,480)):
-        pygame.init()
-        self.screen=pygame.display.set_mode(res, DOUBLEBUF)
-        self.clock = pygame.time.Clock()
-        self.fps=30
+    def __init__(self, res=(640, 480)):
+        oglblit.init(res[0], res[1], 1)
+        self.fps = 30
+        self.last_ts = time.time()
 
     def calc_dt(self):
-        return 0.001*self.clock.tick(self.fps)        
-        
-    def flip(self):
-        pygame.display.flip()
+        cur = time.time()
+        dt = cur - self.last_ts
+        self.last_ts = cur
+        self.fps = 0.9 * self.fps + 0.1 / dt
+        return dt
 
-    def clear(self,color=(192,128,255)):
-        self.screen.fill(color)
-        
-    def onKey(self,key):
+    def flip(self):
+        oglblit.render()
+
+    def clear(self, color=(192, 128, 255)):
         pass
-    
-    def onClick(self,pos):
+
+    def onKey(self, key):
+        pass
+
+    def onClick(self, pos):
         pass
 
     def handleEvents(self):
-        for event in pygame.event.get():
-            if hasattr(event, 'key'):
-                if event.key == K_ESCAPE:
-                    return False
-                else:
-                    if event.type==2:
-                        self.onKey(event.key)
-            elif event.type==pygame.MOUSEBUTTONDOWN:
-                self.onClick(event.pos)
-            #elif hasattr(event,)
+        # for event in pygame.event.get():
+        #     if hasattr(event, 'key'):
+        #         if event.key == K_ESCAPE:
+        #             return False
+        #         else:
+        #             if event.type==2:
+        #                 self.onKey(event.key)
+        #     elif event.type==pygame.MOUSEBUTTONDOWN:
+        #         self.onClick(event.pos)
+        #     #elif hasattr(event,)
         return True
-        
-    def loop(self,dt):
+
+    def loop(self, dt):
         pass
-        
+
     def run(self):
         while self.handleEvents():
-            self.keys=pygame.key.get_pressed()
-            self.loop(self.calc_dt())
+            # self.keys=pygame.key.get_pressed()
+            if not self.loop(self.calc_dt()):
+                break
             self.flip()

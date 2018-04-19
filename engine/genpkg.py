@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 import re
 
@@ -18,12 +18,12 @@ for fname in files:
                 if m:
                     name=m.groups()[0]
                     names.append((base,name))
-        if line.startswith('#EXPORT'):
+        if line.startswith('# EXPORT'):
             export=True
 f=open('__init__.py','w')
 allnames=[]
 for p in names:
-    f.write('from {} import {}\n'.format(p[0],p[1]))
+    f.write('from engine.{} import {}\n'.format(p[0],p[1]))
     allnames.append(p[1])
 
 f.write('\n__all__ = [ ')

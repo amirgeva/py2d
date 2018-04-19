@@ -1,273 +1,275 @@
-import pygame
-import dom
-from cache import get_surface
-from utils import parse_rect, parse_float, format_rect
-from xml.dom.minidom import Element, parseString
+import oglblit
+from engine.cache import get_sheet, get_sheet_name
+from engine.utils import Rect, Point, parse_rect, parse_float
 import json
-
-#EXPORT
-class Sprite(object):
-    def __init__(self,surface=None,rect=None,duration=0.0):
-        self.surface=surface
-        if not rect:
-            rect=pygame.Rect(0,0,surface.get_width(),surface.get_height())
-        self.rect=rect
-        self.duration=duration
-        self.mask=pygame.mask.from_surface(self.surface.subsurface(self.rect),1)
-        #print self.mask.centroid()
-        
-    def draw(self,target,position):
-        if self.surface:
-            target.blit(self.surface,position,self.rect)
-            
-    def get_mask(self):
-        return self.mask
-        
-    def get_height(self):
-        return self.mask.get_size()[1]
-        
-    def get_rect(self):
-        return pygame.Rect(0,0,self.rect.width,self.rect.height)
-
-    def serialize(self):
-        obj = { 
-            'Rect'     : format_rect(self.rect),
-            'Duration' : str(1000*self.duration)
-        }
-        return obj
-        
-    @staticmethod
-    def deserialize(surface, obj):
-        rect=parse_rect(obj['Rect'])
-        dur=0.001*parse_float(obj['Duration'])
-        return Sprite(surface,rect,dur)
-        
+import os
 
 
-#EXPORT
+# #EXPORT
+# class Sprite(object):
+#     def __init__(self,surface=None,rect=None,duration=0.0):
+#         self.surface=surface
+#         if not rect:
+#             rect=Rect(0,0,surface.get_width(),surface.get_height())
+#         self.rect=rect
+#         self.duration=duration
+#         self.mask=pygame.mask.from_surface(self.surface.subsurface(self.rect),1)
+#         #print self.mask.centroid()
+#
+#     def draw(self,target,position):
+#         if self.surface:
+#             target.blit(self.surface,position,self.rect)
+#
+#     def get_mask(self):
+#         return self.mask
+#
+#     def get_height(self):
+#         return self.mask.get_size()[1]
+#
+#     def get_rect(self):
+#         return pygame.Rect(0,0,self.rect.width,self.rect.height)
+#
+#     def serialize(self):
+#         obj = {
+#             'Rect'     : format_rect(self.rect),
+#             'Duration' : str(1000*self.duration)
+#         }
+#         return obj
+#
+#     @staticmethod
+#     def deserialize(surface, obj):
+#         rect=parse_rect(obj['Rect'])
+#         dur=0.001*parse_float(obj['Duration'])
+#         return Sprite(surface,rect,dur)
+
+
+# EXPORT
 class AnimationSequence(object):
-    def __init__(self,name,base_vel=1):
-        self.name=name
-        self.duration=0
-        self.base_vel=base_vel
-        self.sprites=[]
-        
-    def add_sprite(self,sprite):
-        self.sprites.append(sprite)
-        self.duration=self.duration+sprite.duration
+    def __init__(self, name, base_vel=1.0):
+        self.name = name
+        self.base_vel = base_vel
+        self.clear()
 
     def clear(self):
-        self.sprites=[]
-        self.duration=0
-        
+        self.durations = []
+        self.sprites = []
+
+    def add_sprite(self, sprite, duration):
+        self.sprites.append(sprite)
+        self.durations.append(duration)
+
+    def clear(self):
+        self.sprites = []
+        self.durations = []
+
     def serialize(self):
-        frames = [fr.serialize() for fr in self.sprites]
-        obj = { 
-            'Name' : self.name,
-            'BaseVelocity' : str(self.base_vel),
-            'Frames' : frames
+        frames = []
+        for s, d in zip(self.sprites, self.durations):
+            frame = {'Rect' : [s.get_texture_rect_coord(0),
+                               s.get_texture_rect_coord(1),
+                               s.get_texture_rect_coord(2),
+                               s.get_texture_rect_coord(3)],
+                     'Duration': d }
+            frames.append(frame)
+        obj = {
+            'Name': self.name,
+            'BaseVelocity': self.base_vel,
+            'Frames': frames
         }
         return obj
-        
-    @staticmethod
-    def deserialize(surface, seq):
-        s=AnimationSequence(seq['Name'],parse_float(seq['BaseVelocity']))
-        for fr in seq['Frames']:
-            s.add_sprite(Sprite.deserialize(surface, fr))
-        return s
 
-        
-    def __getitem__(self,index):
+    def deserialize(self, sheet, seq):
+        self.clear()
+        self.sheet = sheet
+        for fr in seq['Frames']:
+            d = fr.get('Duration')
+            r = fr.get('Rect')
+            spr = oglblit.get_sprite(sheet, r[0], r[1], r[2], r[3])
+            self.add_sprite(spr, d)
+
+    def __getitem__(self, index):
         return self.sprites[index]
-        
+
     def __len__(self):
         return len(self.sprites)
 
-#EXPORT
+
+# EXPORT
 class AnimatedSprite(object):
-    def __init__(self,sheet):
-        self.sheet=sheet
-        self.sequences={}
-        self.flags={}
-        self.active_sequence=None
-        self.cur_sprite=0
-        self.dt=0.0
-        self.anim_dir=''
-        
-    def add_flag(self,name,value):
-        if name=='AnimDir':
-            self.anim_dir=value
-        self.flags[name]=value
-        
+    def __init__(self):
+        self.clear()
+
+    def clear(self):
+        self.sheet = None
+        self.sequences = {}
+        self.flags = {}
+        self.active_sequence = None
+        self.cur_sprite = 0
+        self.dt = 0.0
+        self.anim_dir = ''
+
+    def add_flag(self, name, value):
+        if name == 'AnimDir':
+            self.anim_dir = value
+        self.flags[name] = value
+
     def get_longest_sequence(self):
-        mx=0
-        res=None
+        mx = 0
+        res = None
         for name in self.sequences:
-            seq=self.sequences.get(name)
-            if len(seq)>mx:
-                mx=len(seq)
-                res=seq
+            seq = self.sequences.get(name)
+            if len(seq) > mx:
+                mx = len(seq)
+                res = seq
         return res
-        
-    def get_sequence_by_name(self,name):        
+
+    def get_sequence_by_name(self, name):
         return self.sequences.get(name)
-        
-    def get_sequence_by_index(self,index):
+
+    def get_sequence_by_index(self, index):
         for name in self.sequences.keys():
-            if index==0:
+            if index == 0:
                 return self.sequences.get(name)
-            index-=1
+            index -= 1
         return None
-        
+
     def get_active_sequence_name(self):
         if not self.active_sequence:
             return ''
         return self.active_sequence.name
-        
-    def set_active_sequence(self,name):
-        if name!=self.get_active_sequence_name() and name in self.sequences:
-            self.active_sequence=self.sequences.get(name)
-            self.dt=0.0
-            self.cur_sprite=0
-        
-    def add_sequence(self,seq):
-        self.sequences[seq.name]=seq
+
+    def set_active_sequence(self, name):
+        if name != self.get_active_sequence_name() and name in self.sequences:
+            self.active_sequence = self.sequences.get(name)
+            self.dt = 0.0
+            self.cur_sprite = 0
+
+    def add_sequence(self, seq):
+        self.sequences[seq.name] = seq
         if not self.active_sequence:
-            self.active_sequence=seq
-            
-    def calculate_axial_velocity(self,velocity):
-        if self.anim_dir=='X': 
+            self.active_sequence = seq
+
+    def calculate_axial_velocity(self, velocity):
+        if self.anim_dir == 'X':
             return abs(velocity.x)
-        if self.anim_dir=='Y': 
+        if self.anim_dir == 'Y':
             return abs(velocity.y)
         return velocity.length()
-        
-    def advance(self,dt,velocity):
-        axial_velocity=self.calculate_axial_velocity(velocity)
-        #print "axial={}".format(axial_velocity)
-        if self.active_sequence and len(self.active_sequence)>0:
-            mult=1
-            if hasattr(self.active_sequence,'base_vel'):
-                if self.active_sequence.base_vel>0 and axial_velocity>0.001: 
-                    mult=axial_velocity / self.active_sequence.base_vel;
-            #print "mult={}".format(mult)
-            self.dt = self.dt + dt*mult
-            #print "self.dt={}".format(self.dt)
-            if self.cur_sprite>=len(self.active_sequence):
-                self.cur_sprite=0
+
+    def advance(self, dt, velocity):
+        axial_velocity = self.calculate_axial_velocity(velocity)
+        # print "axial={}".format(axial_velocity)
+        if self.active_sequence and len(self.active_sequence) > 0:
+            mult = 1.0
+            if hasattr(self.active_sequence, 'base_vel'):
+                if self.active_sequence.base_vel > 0 and axial_velocity > 0.001:
+                    mult = axial_velocity / self.active_sequence.base_vel;
+            # print "mult={}".format(mult)
+            self.dt = self.dt + dt * mult
+            # print "self.dt={}".format(self.dt)
+            if self.cur_sprite >= len(self.active_sequence):
+                self.cur_sprite = 0
             spr = self.active_sequence[self.cur_sprite]
             while self.dt >= spr.duration:
                 self.dt = self.dt - spr.duration
-                self.cur_sprite+=1
-                if self.cur_sprite>=len(self.active_sequence):
-                    self.cur_sprite=0
+                self.cur_sprite += 1
+                if self.cur_sprite >= len(self.active_sequence):
+                    self.cur_sprite = 0
         return True
-        
-    def get_current_height(self):
+
+    def get_current_sprite(self):
         if self.active_sequence:
-            spr = self.active_sequence[self.cur_sprite]
+            return self.active_sequence[self.cur_sprite]
+        return None
+
+    def get_current_height(self):
+        spr = self.get_current_sprite()
+        if spr:
             return spr.get_height()
         return 0
-            
-        
-    def draw(self,target,position):
-        if self.active_sequence:
-            spr = self.active_sequence[self.cur_sprite]
-            spr.draw(target,position)
-            
-    def get_mask(self):
-        if self.active_sequence:
-            return self.active_sequence[self.cur_sprite].get_mask()
-        return pygame.mask.Mask(1,1)
+
+    def draw(self, position):
+        spr = self.get_current_sprite()
+        if spr:
+            oglblit.draw_sprite(spr, False, position.x, position.y)
 
     def get_rect(self):
-        if self.active_sequence:
-            return self.active_sequence[self.cur_sprite].get_rect()
-        return pygame.Rect(0,0,1,1)
-        
+        spr = self.get_current_sprite()
+        if spr:
+            return Rect(0, 0, spr.get_width(), spr.get_height())
+        return Rect(0, 0, 1, 1)
+
     def serialize(self):
         sequences = [s.serialize() for s in self.sequences.values()]
-        obj = { 
-            'Image' : self.sheet,
-            'Sequences' : sequences,
+        obj = {
+            'Image': get_sheet_name(self.sheet),
+            'Sequences': sequences,
             'Flags': self.flags
         }
         return json.dumps(obj, indent=4)
-        
-    @staticmethod
-    def deserialize(obj):
-        res=AnimatedSprite(obj['Image'])
-        surface = get_surface(obj['Image'])
+
+    def deserialize(self, obj):
+        self.clear()
+        self.sheet = get_sheet(obj['Image'])
         flags = obj['Flags']
         for key in flags:
-            res.add_flag(key,flags[key])
+            self.add_flag(key, flags[key])
         for seq in obj['Sequences']:
-            s=AnimationSequence.deserialize(surface, seq)
-            res.add_sequence(s)
-        return res
+            s = AnimationSequence(seq['Name'], seq['BaseVelocity'])
+            s.deserialize(self.sheet, seq)
+            self.add_sequence(s)
 
-def load_xml(root):
-    res=AnimatedSprite()
-    for flag in root.children('Flag'):
-        res.add_flag(flag['Name'],flag['Value'])
-    for seq in root.children('Sequence'):
-        s=AnimationSequence(seq['Name'],parse_float(seq['BaseVelocity']))
-        res.add_sequence(s)
-        for fr in seq.children('Frame'):
-            surf=get_surface(fr['Image'])
-            rect=parse_rect(fr['Rect'])
-            dur=0.001*parse_float(fr['Duration'])
-            s.add_sprite(Sprite(surf,rect,dur))
-    return res
-    
-#EXPORT
-def load_xml_file(filename):
-    return load_xml(dom.parseFile(filename))
-    
-#EXPORT
-def load_xml_str(s):
-    return load_xml(dom.parseString(s))
 
-#EXPORT
+# EXPORT
 def load_json_file(filename):
-    obj = json.load(open(filename,"r"))
-    return AnimatedSprite.deserialize(obj)
-    
-#EXPORT
+    obj = json.load(open(filename, "r"))
+    a = AnimatedSprite()
+    a.deserialize(obj)
+    return a
+
+
+# EXPORT
 def load_json_str(s):
     obj = json.loads(s)
     return AnimatedSprite.deserialize(obj)
-            
-#EXPORT
+
+
+# EXPORT
 def load_file(filename):
     return load_json_file(filename)
-    
-#EXPORT
+
+
+# EXPORT
 def load_str(s):
     return load_json_str(s)
-    
-#EXPORT
-def generate_blocks_sprite(filename,w,h,x0,y0,padx,pady):
-    s=get_surface(filename)
-    x=x0
-    y=y0
-    anim=AnimatedSprite(filename)
-    i=0
-    j=0
-    while (y+h)<s.get_height():
-        while (x+w)<s.get_width():
-            name='{},{}'.format(i,j)
-            print name
-            seq=AnimationSequence(name)
-            seq.add_sprite(Sprite(s,pygame.Rect(x,y,w,h)))
-            anim.add_sequence(seq)
-            x+=(w+padx)
-            j+=1
-        x=x0
-        y+=(h+pady)
-        i+=1
-        j=0
-    return anim
-    
 
-    
+
+# # EXPORT
+# def generate_blocks_sprite(filename, w, h, x0, y0, padx, pady):
+#     s = get_surface(filename)
+#     x = x0
+#     y = y0
+#     anim = AnimatedSprite(filename)
+#     i = 0
+#     j = 0
+#     while (y + h) < s.get_height():
+#         while (x + w) < s.get_width():
+#             name = '{},{}'.format(i, j)
+#             print(name)
+#             seq = AnimationSequence(name)
+#             seq.add_sprite(Sprite(s, pygame.Rect(x, y, w, h)))
+#             anim.add_sequence(seq)
+#             x += (w + padx)
+#             j += 1
+#         x = x0
+#         y += (h + pady)
+#         i += 1
+#         j = 0
+#     return anim
+
+if __name__ == '__main__':
+    print(os.getcwd())
+    oglblit.init(800, 600, 1)
+    ship = load_file('ship.json')
+    open('fff.json', 'w').write(ship.serialize())
+    oglblit.deinit()
