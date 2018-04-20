@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 sys.path.append('../..')
 #sys.path.append('.')
 from engine import *
-import pygame
-from pygame.math import Vector2
 from platform import generate_level
 from boy import Boy
 
