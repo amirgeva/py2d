@@ -1,9 +1,7 @@
 import sys
 sys.path.append('../..')
-#sys.path.append('.')
 from engine import *
-import pygame
-from pygame.math import Vector2
+from engine.utils import vector2
 from walker import Walker
 
 class Boy(Walker):
@@ -27,15 +25,15 @@ class Boy(Walker):
         acc=self.get_accel()
         v=self.get_velocity()
         if self.onground>0:
-            if keys[pygame.K_RIGHT]:
+            if KeyCodes['RIGHT'] in keys:
                 acc.x=150
-            elif keys[pygame.K_LEFT]:
+            elif KeyCodes['LEFT'] in keys:
                 acc.x=-150
             else:
                 acc.x=0
         else:
             acc.x=0
-        if keys[pygame.K_UP] and self.onground>0:
+        if KeyCodes['UP'] in keys and self.onground>0:
             self.set_velocity(v.x,-136)
         self.set_accel(acc.x,acc.y)
-            
+

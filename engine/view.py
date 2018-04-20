@@ -1,26 +1,25 @@
 from engine.utils import Rect
-
+import oglblit
 
 # EXPORT
 class View(object):
-    def __init__(self, target, rect=None):
-        self.target = target
+    def __init__(self, rect=None):
         if rect:
             self.rect = rect
         else:
-            self.rect = target.get_rect()
+            self.rect = Rect(0,0,oglblit.get_width(),oglblit.get_height())
 
     def offset(self, d):
-        self.rect.move_ip(d[0], d[1])
+        self.rect.move(d[0], d[1])
 
     def get_position(self):
-        return self.rect.topleft
+        return self.rect.tl
 
     def set_position(self, pos):
-        self.rect = Rect(pos.x, pos.y, self.rect.width, self.rect.height)
+        self.rect = Rect(pos.x, pos.y, pos.x+self.rect.width(), pos.y+self.rect.height())
 
     def relative_position(self, pos):
-        return pos - self.rect.topleft
+        return pos - self.rect.tl
 
     def get_rect(self):
-        return self.rect
+        return Rect(self.rect)

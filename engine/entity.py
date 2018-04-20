@@ -30,19 +30,16 @@ class Entity(RigidBody):
         return True
 
     def draw(self, view):
-        self.anim.draw(view.target, view.relative_position(self.get_position()))
+        self.anim.draw(view.relative_position(self.get_position()))
 
     def get_rect(self):
         r = self.anim.get_rect()
         ofs = self.get_position()
-        r.move_ip(ofs[0], ofs[1])
+        r.move(ofs)
         return r
 
     def get_id(self):
         return self.id
-
-    def get_mask(self):
-        return self.anim.get_mask()
 
     def collision(self, other, col_point):
         pass

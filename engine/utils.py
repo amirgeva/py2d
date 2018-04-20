@@ -1,4 +1,5 @@
 import itertools
+import math
 
 
 class Point(object):
@@ -69,6 +70,15 @@ class Point(object):
             p = Point(p)
         return Point(self.x - p.x, self.y - p.y)
 
+    def scaled(self, s):
+        return Point(self.x*s, self.y*s)
+
+    def length(self):
+        return math.sqrt(self.x*self.x + self.y*self.y)
+
+    def norm(self):
+        return self.length()
+
 # EXPORT
 def vector2(*args):
     if len(args) == 2:
@@ -109,6 +119,11 @@ class Rect(object):
 
     def area(self):
         return self.width() * self.height()
+
+    def move(self, offset):
+        self.tl = self.tl + offset
+        self.br = self.br + offset
+        return self
 
     def inflate(self, d):
         if isinstance(d, Point):

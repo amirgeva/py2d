@@ -2,8 +2,7 @@ import sys
 sys.path.append('../..')
 #sys.path.append('.')
 from engine import *
-import pygame
-from pygame.math import Vector2
+from engine.utils import vector2
 from walker import Walker
 
 
@@ -19,7 +18,7 @@ class Ogre(Walker):
         return 'Monster'
         
     def get_external_force(self):
-        return Vector2(0,0)
+        return vector2(0,0)
         
     def advance(self,dt):
         a=self.get_accel()

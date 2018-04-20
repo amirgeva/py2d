@@ -1,16 +1,14 @@
 import sys
 sys.path.append('../..')
-#sys.path.append('.')
 from engine import *
-import pygame
-from pygame.math import Vector2
+from engine.utils import vector2
 import random
 
 from block import Block
 from ogre import Ogre
 
 def generate_platform(scene,x,y,l):
-    for i in xrange(0,l):
+    for i in range(0,l):
         j=random.randint(6,9)
         if i==0: j=5
         if i==(l-1): j=10

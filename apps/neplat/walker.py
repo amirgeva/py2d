@@ -2,8 +2,7 @@ import sys
 sys.path.append('../..')
 #sys.path.append('.')
 from engine import *
-import pygame
-from pygame.math import Vector2
+from engine.utils import vector2
 
 class Walker(Entity):
     def __init__(self,spr_filename):
@@ -12,7 +11,7 @@ class Walker(Entity):
         self.onground=0
 
     def collision(self,other,col_pt):
-        y=col_pt[1]
+        y=col_pt.y
         h=self.anim.get_current_height()
         v=self.get_velocity()
         if y>(h-8) and v.y>0:
@@ -23,8 +22,8 @@ class Walker(Entity):
     def get_external_force(self):
         v=self.get_velocity().x
         if self.onground>0:
-            return Vector2(-1.5*v,0)
-        return Vector2(-0.1*v,0)
+            return vector2(-1.5*v,0)
+        return vector2(-0.1*v,0)
 
     def advance(self,dt):
         self.onground-=1

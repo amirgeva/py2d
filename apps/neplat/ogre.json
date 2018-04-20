@@ -1,49 +1,49 @@
 {
-    "Image": "monster.png", 
-    "Flags": {}, 
+    "Image": "monster.png",
+    "Flags": {},
     "Sequences": [
         {
             "Frames": [
                 {
-                    "Duration": "100.0", 
-                    "Rect": "408,95,456,145"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 408,95,456,145 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "286,97,336,145"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 286,97,336,145 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "154,95,198,145"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 154,95,198,145 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "6,93,56,145"
+                    "Duration": 100.0,
+                    "Rect": [ 6,93,56,145 ]
                 }
-            ], 
-            "BaseVelocity": "100", 
+            ],
+            "BaseVelocity": 100,
             "Name": "right"
-        }, 
+        },
         {
             "Frames": [
                 {
-                    "Duration": "100.0", 
-                    "Rect": "8,12,56,62"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 8,12,56,62 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "128,14,178,62"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 128,14,178,62 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "266,12,310,62"
-                }, 
+                    "Duration": 100.0,
+                    "Rect": [ 266,12,310,62 ]
+                },
                 {
-                    "Duration": "100.0", 
-                    "Rect": "408,10,458,62"
+                    "Duration": 100.0,
+                    "Rect": [ 408,10,458,62 ]
                 }
-            ], 
-            "BaseVelocity": "100", 
+            ],
+            "BaseVelocity": 100,
             "Name": "left"
         }
     ]

@@ -26,6 +26,8 @@ for p in names:
     f.write('from engine.{} import {}\n'.format(p[0],p[1]))
     allnames.append(p[1])
 
+f.write('from engine.keycodes import *\n\n')
+
 f.write('\n__all__ = [ ')
 f.write("'{}'".format("','".join(allnames)))
 f.write(' ]\n\n')

@@ -14,8 +14,8 @@ class RigidBody(object):
 
     def advance(self, dt):
         self.prepos = self.position
-        self.position = self.position + dt * self.velocity
-        self.velocity += dt * (self.accel + self.get_external_force())
+        self.position = self.position + self.velocity.scaled(dt)
+        self.velocity += (self.accel + self.get_external_force()).scaled(dt)
 
     def get_position(self):
         return vector2(int(self.position.x), int(self.position.y))

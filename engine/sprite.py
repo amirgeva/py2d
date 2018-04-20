@@ -5,42 +5,35 @@ import json
 import os
 
 
-# #EXPORT
-# class Sprite(object):
-#     def __init__(self,surface=None,rect=None,duration=0.0):
-#         self.surface=surface
-#         if not rect:
-#             rect=Rect(0,0,surface.get_width(),surface.get_height())
-#         self.rect=rect
-#         self.duration=duration
-#         self.mask=pygame.mask.from_surface(self.surface.subsurface(self.rect),1)
-#         #print self.mask.centroid()
-#
-#     def draw(self,target,position):
-#         if self.surface:
-#             target.blit(self.surface,position,self.rect)
-#
-#     def get_mask(self):
-#         return self.mask
-#
-#     def get_height(self):
-#         return self.mask.get_size()[1]
-#
-#     def get_rect(self):
-#         return pygame.Rect(0,0,self.rect.width,self.rect.height)
-#
-#     def serialize(self):
-#         obj = {
-#             'Rect'     : format_rect(self.rect),
-#             'Duration' : str(1000*self.duration)
-#         }
-#         return obj
-#
-#     @staticmethod
-#     def deserialize(surface, obj):
-#         rect=parse_rect(obj['Rect'])
-#         dur=0.001*parse_float(obj['Duration'])
-#         return Sprite(surface,rect,dur)
+#EXPORT
+class Sprite(object):
+    def __init__(self, sprite_id, duration=0.0):
+        self.sprite_id = sprite_id
+        self.rect=Rect(0,0,oglblit.get_sprite_width(sprite_id),oglblit.get_sprite_height(sprite_id))
+        self.duration=duration
+
+    def draw(self, position):
+        oglblit.draw_sprite(self.sprite_id, False, position)
+
+    def get_height(self):
+        return self.rect.height()
+
+    def get_rect(self):
+        return Rect(self.rect)
+
+    def serialize(self):
+        obj = {
+            'Rect': self.rect,
+            'Duration' : self.duration
+        }
+        return obj
+
+    @staticmethod
+    def deserialize(texture, obj):
+        r = obj['Rect']
+        dur = obj['Duration']
+        sprite_id = oglblit.create_sprite(texture,r[0],r[1],r[2],r[3])
+        return Sprite(sprite_id,dur)
 
 
 # EXPORT
@@ -48,44 +41,25 @@ class AnimationSequence(object):
     def __init__(self, name, base_vel=1.0):
         self.name = name
         self.base_vel = base_vel
-        self.clear()
-
-    def clear(self):
-        self.durations = []
         self.sprites = []
 
-    def add_sprite(self, sprite, duration):
+    def add_sprite(self, sprite):
         self.sprites.append(sprite)
-        self.durations.append(duration)
-
-    def clear(self):
-        self.sprites = []
-        self.durations = []
 
     def serialize(self):
         frames = []
-        for s, d in zip(self.sprites, self.durations):
-            frame = {'Rect' : [s.get_texture_rect_coord(0),
-                               s.get_texture_rect_coord(1),
-                               s.get_texture_rect_coord(2),
-                               s.get_texture_rect_coord(3)],
-                     'Duration': d }
-            frames.append(frame)
-        obj = {
+        for s in self.sprites:
+            frames.append(s.serialize())
+        return {
             'Name': self.name,
             'BaseVelocity': self.base_vel,
             'Frames': frames
         }
-        return obj
 
-    def deserialize(self, sheet, seq):
-        self.clear()
-        self.sheet = sheet
-        for fr in seq['Frames']:
-            d = fr.get('Duration')
-            r = fr.get('Rect')
-            spr = oglblit.get_sprite(sheet, r[0], r[1], r[2], r[3])
-            self.add_sprite(spr, d)
+    def deserialize(self, texture, seq):
+        self.sprites=[]
+        for frame in seq['Frames']:
+            self.add_sprite(Sprite.deserialize(texture,frame))
 
     def __getitem__(self, index):
         return self.sprites[index]
@@ -191,12 +165,12 @@ class AnimatedSprite(object):
     def draw(self, position):
         spr = self.get_current_sprite()
         if spr:
-            oglblit.draw_sprite(spr, False, position.x, position.y)
+            oglblit.draw_sprite(spr.sprite_id, False, int(position.x), int(position.y))
 
     def get_rect(self):
         spr = self.get_current_sprite()
         if spr:
-            return Rect(0, 0, spr.get_width(), spr.get_height())
+            return spr.get_rect()
         return Rect(0, 0, 1, 1)
 
     def serialize(self):

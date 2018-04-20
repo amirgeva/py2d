@@ -29,6 +29,9 @@ class Application(object):
         pass
 
     def handleEvents(self):
+        self.keys = [int(k) for k in oglblit.get_keys().split()]
+        if 256 in self.keys:
+            return False
         # for event in pygame.event.get():
         #     if hasattr(event, 'key'):
         #         if event.key == K_ESCAPE:
@@ -46,7 +49,6 @@ class Application(object):
 
     def run(self):
         while self.handleEvents():
-            # self.keys=pygame.key.get_pressed()
             if not self.loop(self.calc_dt()):
                 break
             self.flip()

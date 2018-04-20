@@ -1,4 +1,6 @@
+import oglblit
 from engine.rtree import RTree
+from engine.utils import Point
 
 
 # EXPORT
@@ -50,18 +52,18 @@ class Scene(object):
 
     def check_collisions(self, entity, rect):
         id = entity.get_id()
+        spr1=entity.anim.get_current_sprite().sprite_id
         cands = self.rtree.search(rect)
-        m1 = entity.get_mask()
         for (cand_id, cand_rect) in cands:
             if cand_id != id:
                 cand = self.entities.get(cand_id)
-                m2 = cand.get_mask()
+                spr2 = cand.anim.get_current_sprite().sprite_id
                 offset = cand.get_position() - entity.get_position()
                 ox = int(offset.x)
                 oy = int(offset.y)
-                c = m1.overlap_area(m2, (ox, oy))
-                if c > 0:
-                    n1 = m1.overlap_mask(m2, (ox, oy))
-                    n2 = m2.overlap_mask(m1, (-ox, -oy))
-                    entity.collision(cand, n1.centroid())
-                    cand.collision(entity, n2.centroid())
+                pts = oglblit.check_collision(spr1,spr2,ox,oy)
+                if pts > 0:
+                    dx = oglblit.get_collision_x()
+                    dy = oglblit.get_collision_y()
+                    entity.collision(cand, Point(dx, dy))
+                    cand.collision(entity, Point(dx-ox, dy-oy))
