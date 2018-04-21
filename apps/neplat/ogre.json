@@ -5,19 +5,19 @@
         {
             "Frames": [
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 408,95,456,145 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 286,97,336,145 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 154,95,198,145 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 6,93,56,145 ]
                 }
             ],
@@ -27,19 +27,19 @@
         {
             "Frames": [
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 8,12,56,62 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 128,14,178,62 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 266,12,310,62 ]
                 },
                 {
-                    "Duration": 100.0,
+                    "Duration": 0.1,
                     "Rect": [ 408,10,458,62 ]
                 }
             ],
