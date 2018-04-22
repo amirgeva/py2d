@@ -162,19 +162,21 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.start(100)
 
     def onTimer(self):
-        if self.current_sequence:
-            # print("Drawing {}".format(self.animation_frame))
-            seq = self.seq_dict.get(self.current_sequence)
-            if self.animation_frame < len(seq):
-                frame = seq[self.animation_frame]
-                self.animation_frame += 1
-                if self.animation_frame >= len(seq):
-                    self.animation_frame = 0
-                oglblit.draw_sprite(frame.sprite_id, False, 0, 0)
-                oglblit.render()
-            else:
+        if not self.current_sequence:
+            return
+        seq = self.seq_dict.get(self.current_sequence)
+        if not seq:
+            return
+        if self.animation_frame < len(seq):
+            frame = seq[self.animation_frame]
+            self.animation_frame += 1
+            if self.animation_frame >= len(seq):
                 self.animation_frame = 0
-                oglblit.render()
+            oglblit.draw_sprite(frame.sprite_id, False, 0, 0)
+            oglblit.render()
+        else:
+            self.animation_frame = 0
+            oglblit.render()
 
     def set_current_sequence(self, name):
         self.current_sequence = name

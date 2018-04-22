@@ -1,0 +1,21 @@
+{
+    "Image": "tinvader.png",
+    "Sequences": [
+        {
+            "BaseVelocity": 1.0,
+            "Name": "backdrop",
+            "Frames": [
+                {
+                    "Rect": [
+                        0,
+                        400,
+                        800,
+                        1000
+                    ],
+                    "Duration": 100
+                }
+            ]
+        }
+    ],
+    "Flags": ""
+}

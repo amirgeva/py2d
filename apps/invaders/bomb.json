@@ -1,0 +1,21 @@
+{
+    "Flags": "",
+    "Sequences": [
+        {
+            "Name": "bomb",
+            "Frames": [
+                {
+                    "Duration": 0.1,
+                    "Rect": [
+                        250,
+                        202,
+                        256,
+                        212
+                    ]
+                }
+            ],
+            "BaseVelocity": 1.0
+        }
+    ],
+    "Image": "tinvader.png"
+}

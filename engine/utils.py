@@ -70,6 +70,9 @@ class Point(object):
             p = Point(p)
         return Point(self.x - p.x, self.y - p.y)
 
+    def __neg__(self):
+        return Point(-self.x,-self.y)
+
     def scaled(self, s):
         return Point(self.x*s, self.y*s)
 

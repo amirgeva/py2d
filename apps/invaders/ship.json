@@ -1,0 +1,21 @@
+{
+    "Image": "tinvader.png",
+    "Flags": "",
+    "Sequences": [
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        410,
+                        312,
+                        442,
+                        330
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "ship",
+            "BaseVelocity": 1.0
+        }
+    ]
+}

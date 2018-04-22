@@ -1,0 +1,21 @@
+{
+    "Image": "tinvader.png",
+    "Flags": "",
+    "Sequences": [
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        620,
+                        246,
+                        630,
+                        276
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "missile",
+            "BaseVelocity": 1.0
+        }
+    ]
+}

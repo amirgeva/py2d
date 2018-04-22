@@ -20,14 +20,14 @@ class RigidBody(object):
     def get_position(self):
         return vector2(int(self.position.x), int(self.position.y))
 
-    def set_position(self, x, y):
-        self.position = vector2(x, y)
+    def set_position(self, *args):
+        self.position = vector2(*args)
 
     def get_velocity(self):
         return vector2(self.velocity.x, self.velocity.y)
 
-    def set_velocity(self, vx, vy):
-        self.velocity = vector2(vx, vy)
+    def set_velocity(self, *args):
+        self.velocity = vector2(*args)
 
     def get_accel(self):
         return vector2(self.accel.x, self.accel.y)

@@ -193,6 +193,9 @@ class AnimatedSprite(object):
             s.deserialize(self.sheet, seq)
             self.add_sequence(s)
 
+    def load(self,filename):
+        self.deserialize(json.load(open(filename, "r")))
+
 
 # EXPORT
 def load_json_file(filename):
