@@ -3,15 +3,13 @@ from PyQt4 import QtCore, QtGui
 import sys
 import os
 
-sys.path.append('..')
-sys.path.append('.')
 from engine import *
 from engine.utils import Rect
 import json
 import oglblit
 
 
-class AnimtionFrame(object):
+class AnimationFrame(object):
     def __init__(self):
         self.rect = None
         self.duration = 0.0
@@ -211,7 +209,7 @@ class MainWindow(QtGui.QMainWindow):
         si = self.sequences.selectedItems()
         if len(si) == 1:
             name = si[0].text()
-            frame = AnimtionFrame()
+            frame = AnimationFrame()
             frame.rect = r
             frame.duration = 0.1
             frame.sprite_id = oglblit.create_sprite(self.sheet.texture, r[0], r[1], r[2], r[3])
@@ -273,7 +271,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.sequences.addItem(name)
                 frames = []
                 for frame_dict in seq.get('Frames'):
-                    frame = AnimtionFrame()
+                    frame = AnimationFrame()
                     frame.rect = tuple(frame_dict.get('Rect'))
                     frame.duration = frame_dict.get('Duration')
                     r = frame.rect
@@ -294,7 +292,7 @@ class MainWindow(QtGui.QMainWindow):
                 frames = []
                 seq = self.seq_dict.get(name)
                 for frame in seq:
-                    frames.append({"Rect": list(frame[0]), "Duration": frame[1]})
+                    frames.append({"Rect": list(frame.rect), "Duration": frame.duration})
                 sequences.append({"Name": name, "BaseVelocity": 1.0, "Frames": frames})
             root['Sequences'] = sequences
             open(filename, 'w').write(json.dumps(root, indent=4))

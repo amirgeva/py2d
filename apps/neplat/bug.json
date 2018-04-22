@@ -1,58 +1,126 @@
 {
-    "Image": "monster.png",
-    "Flags": {},
     "Sequences": [
         {
+            "Name": "right",
+            "BaseVelocity": 1.0,
             "Frames": [
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 14,258,58,278 ]
+                    "Rect": [
+                        14,
+                        258,
+                        58,
+                        278
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 146,258,190,278 ]
+                    "Rect": [
+                        146,
+                        258,
+                        190,
+                        278
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 278,248,322,278 ]
+                    "Rect": [
+                        278,
+                        248,
+                        322,
+                        278
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 410,244,454,278 ]
+                    "Rect": [
+                        410,
+                        244,
+                        454,
+                        278
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 278,248,322,278 ]
+                    "Rect": [
+                        278,
+                        248,
+                        322,
+                        278
+                    ],
+                    "Duration": 100.0
+                },
+                {
+                    "Rect": [
+                        146,
+                        258,
+                        190,
+                        278
+                    ],
+                    "Duration": 0.1
                 }
-            ],
-            "BaseVelocity": 1,
-            "Name": "right"
+            ]
         },
         {
+            "Name": "left",
+            "BaseVelocity": 1.0,
             "Frames": [
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 409,196,453,216 ]
+                    "Rect": [
+                        409,
+                        196,
+                        453,
+                        216
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 277,196,321,216 ]
+                    "Rect": [
+                        277,
+                        196,
+                        321,
+                        216
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 145,186,189,216 ]
+                    "Rect": [
+                        145,
+                        186,
+                        189,
+                        216
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 13,182,57,216 ]
+                    "Rect": [
+                        13,
+                        182,
+                        57,
+                        216
+                    ],
+                    "Duration": 100.0
                 },
                 {
-                    "Duration": 100.0,
-                    "Rect": [ 145,186,189,216 ]
+                    "Rect": [
+                        145,
+                        186,
+                        189,
+                        216
+                    ],
+                    "Duration": 100.0
+                },
+                {
+                    "Rect": [
+                        277,
+                        196,
+                        321,
+                        216
+                    ],
+                    "Duration": 0.1
                 }
-            ],
-            "BaseVelocity": 1,
-            "Name": "left"
+            ]
         }
-    ]
+    ],
+    "Flags": "",
+    "Image": ""
 }
