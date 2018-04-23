@@ -40,6 +40,9 @@ class Missile(Entity):
         super(Missile, self).__init__(load_json_file("missile.json"))
         self.alive = True
 
+    def get_type(self):
+        return "Missile"
+
     def advance(self, dt):
         super(Missile, self).advance(dt)
         if self.get_position().y < -100:
@@ -48,8 +51,6 @@ class Missile(Entity):
 
     def collision(self, other, col_pt):
         self.alive = False
-        if other.get_type() == 'Monster':
-            other.alive = False
 
 
 class SmallMonster(Entity):
@@ -59,6 +60,7 @@ class SmallMonster(Entity):
         if type<=0:
             type=random.randint(1,12)
         self.anim.set_active_sequence("m{}".format(type))
+        self.group=None
 
     def advance(self, dt):
         super(SmallMonster,self).advance(dt)
@@ -66,6 +68,13 @@ class SmallMonster(Entity):
 
     def get_type(self):
         return 'Monster'
+
+    def collision(self, other, col_pt):
+        if other.get_type() == 'Missile':
+            self.alive = False
+            if self.group:
+                self.group.died(self)
+
 
 class MonsterGroup(object):
     def __init__(self,scene):
@@ -77,6 +86,7 @@ class MonsterGroup(object):
                 m=SmallMonster()
                 m.set_position(64*col+10,64*row+10)
                 m.set_velocity(16.0,0.0)
+                m.group = self
                 self.monsters.append(m)
                 scene.add(m)
 
@@ -84,7 +94,11 @@ class MonsterGroup(object):
         self.dir=-self.dir
         for m in self.monsters:
             m.set_position(m.get_position()+vector2(0,10))
-            m.set_velocity(-m.get_velocity().scaled(1.1))
+            m.set_velocity(-m.get_velocity().scaled(1.2))
+
+    def died(self,m):
+        for m in self.monsters:
+            m.set_velocity(m.get_velocity().scaled(1.05))
 
     def advance(self,dt):
         for m in self.monsters:
@@ -108,6 +122,7 @@ class Ship(Entity):
         self.anim.set_active_sequence("ship")
         self.scene = scene
         self.last_shoot = -100.0
+        self.shoot_sound = oglblit.load_audio('wa.wav')
 
     def get_type(self):
         return 'Ship'
@@ -121,6 +136,7 @@ class Ship(Entity):
         if KeyCodes['SPACE'] in keys:
             cur = time.time()
             if (cur-self.last_shoot)>0.25:
+                oglblit.play_audio(self.shoot_sound)
                 self.last_shoot=cur
                 m=Missile()
                 m.set_position(self.get_position()+vector2(10,-30))
