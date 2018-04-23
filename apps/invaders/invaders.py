@@ -14,6 +14,44 @@ class Blocker(Entity):
         super(Blocker,self).__init__(load_json_file("blockers.json"))
         self.anim.set_active_sequence("b1")
 
+    def get_type(self):
+        return 'Block'
+
+class Bomb(Entity):
+    def __init__(self):
+        super(Bomb, self).__init__(load_json_file("bomb.json"))
+        self.alive = True
+        self.set_velocity(0,80)
+        self.set_accel(0,50)
+
+    def advance(self, dt):
+        super(Bomb, self).advance(dt)
+        if self.get_position().y > 1000:
+            self.alive = False
+        return self.alive
+
+    def collision(self, other, col_pt):
+        if other.get_type() == 'Monster':
+            return
+        self.alive = False
+
+class Missile(Entity):
+    def __init__(self):
+        super(Missile, self).__init__(load_json_file("missile.json"))
+        self.alive = True
+
+    def advance(self, dt):
+        super(Missile, self).advance(dt)
+        if self.get_position().y < -100:
+            self.alive = False
+        return self.alive
+
+    def collision(self, other, col_pt):
+        self.alive = False
+        if other.get_type() == 'Monster':
+            other.alive = False
+
+
 class SmallMonster(Entity):
     def __init__(self,type=-1):
         super(SmallMonster,self).__init__(load_json_file("smalls.json"))
@@ -32,6 +70,7 @@ class SmallMonster(Entity):
 class MonsterGroup(object):
     def __init__(self,scene):
         self.monsters=[]
+        self.scene = scene
         self.dir=1
         for row in range(0,5):
             for col in range(0,10):
@@ -56,21 +95,10 @@ class MonsterGroup(object):
                 if self.dir<0 and m.get_position().x < 10:
                     self.step_down()
                     break
-
-class Missile(Entity):
-    def __init__(self):
-        super(Missile,self).__init__(load_json_file("missile.json"))
-        self.alive=True
-
-    def advance(self, dt):
-        super(Missile,self).advance(dt)
-        return self.alive
-
-    def collision(self,other,col_pt):
-        self.alive = False
-        if other.get_type()=='Monster':
-            other.alive=False
-
+                if random.random()<0.001:
+                    b=Bomb()
+                    b.set_position(m.get_position()+vector2(0,30))
+                    self.scene.add(b)
 
 
 class Ship(Entity):
@@ -81,6 +109,9 @@ class Ship(Entity):
         self.scene = scene
         self.last_shoot = -100.0
 
+    def get_type(self):
+        return 'Ship'
+
     def set_keys(self,keys):
         vx=0
         if KeyCodes['RIGHT'] in keys:
@@ -89,7 +120,7 @@ class Ship(Entity):
             vx-=250
         if KeyCodes['SPACE'] in keys:
             cur = time.time()
-            if (cur-self.last_shoot)>0.5:
+            if (cur-self.last_shoot)>0.25:
                 self.last_shoot=cur
                 m=Missile()
                 m.set_position(self.get_position()+vector2(10,-30))
