@@ -1,0 +1,81 @@
+{
+    "Image": "tinvader.png",
+    "Flags": "",
+    "Sequences": [
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        272,
+                        348,
+                        332,
+                        368
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "b5",
+            "BaseVelocity": 1.0
+        },
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        0,
+                        336,
+                        60,
+                        368
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "b1",
+            "BaseVelocity": 1.0
+        },
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        204,
+                        340,
+                        264,
+                        368
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "b4",
+            "BaseVelocity": 1.0
+        },
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        68,
+                        336,
+                        128,
+                        368
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "b2",
+            "BaseVelocity": 1.0
+        },
+        {
+            "Frames": [
+                {
+                    "Rect": [
+                        136,
+                        336,
+                        196,
+                        368
+                    ],
+                    "Duration": 0.1
+                }
+            ],
+            "Name": "b3",
+            "BaseVelocity": 1.0
+        }
+    ]
+}

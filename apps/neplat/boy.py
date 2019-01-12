@@ -1,5 +1,4 @@
 import sys
-sys.path.append('../..')
 from engine import *
 from engine.utils import vector2
 from walker import Walker

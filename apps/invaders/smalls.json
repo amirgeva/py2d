@@ -1,0 +1,288 @@
+{
+    "Flags": "",
+    "Image": "tinvader.png",
+    "Sequences": [
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m9",
+            "Frames": [
+                {
+                    "Rect": [
+                        76,
+                        202,
+                        102,
+                        220
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        42,
+                        202,
+                        68,
+                        220
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        8,
+                        202,
+                        34,
+                        220
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        42,
+                        202,
+                        68,
+                        220
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m6",
+            "Frames": [
+                {
+                    "Rect": [
+                        344,
+                        178,
+                        374,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        378,
+                        178,
+                        408,
+                        198
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m4",
+            "Frames": [
+                {
+                    "Rect": [
+                        210,
+                        178,
+                        236,
+                        192
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        240,
+                        178,
+                        266,
+                        192
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m10",
+            "Frames": [
+                {
+                    "Rect": [
+                        178,
+                        198,
+                        204,
+                        218
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        212,
+                        198,
+                        236,
+                        218
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m1",
+            "Frames": [
+                {
+                    "Rect": [
+                        6,
+                        180,
+                        36,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        40,
+                        180,
+                        70,
+                        198
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m8",
+            "Frames": [
+                {
+                    "Rect": [
+                        480,
+                        178,
+                        510,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        514,
+                        178,
+                        544,
+                        198
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m3",
+            "Frames": [
+                {
+                    "Rect": [
+                        140,
+                        178,
+                        170,
+                        196
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        174,
+                        178,
+                        204,
+                        196
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m2",
+            "Frames": [
+                {
+                    "Rect": [
+                        76,
+                        178,
+                        98,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        106,
+                        178,
+                        136,
+                        194
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m7",
+            "Frames": [
+                {
+                    "Rect": [
+                        410,
+                        178,
+                        442,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        444,
+                        178,
+                        476,
+                        198
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m5",
+            "Frames": [
+                {
+                    "Rect": [
+                        274,
+                        180,
+                        304,
+                        198
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        310,
+                        180,
+                        336,
+                        198
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        },
+        {
+            "BaseVelocity": 100.0,
+            "Name": "m11",
+            "Frames": [
+                {
+                    "Rect": [
+                        276,
+                        202,
+                        306,
+                        220
+                    ],
+                    "Duration": 0.1
+                },
+                {
+                    "Rect": [
+                        310,
+                        202,
+                        340,
+                        218
+                    ],
+                    "Duration": 0.1
+                }
+            ]
+        }
+    ]
+}
