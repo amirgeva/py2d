@@ -1,5 +1,6 @@
+import pygame
 from engine.utils import Rect
-import oglblit
+from engine.app import get_screen_size
 
 # EXPORT
 class View(object):
@@ -7,7 +8,8 @@ class View(object):
         if rect:
             self.rect = rect
         else:
-            self.rect = Rect(0,0,oglblit.get_width(),oglblit.get_height())
+            res = get_screen_size()
+            self.rect = Rect(0,0,res[0],res[1])
 
     def offset(self, d):
         self.rect.move(d[0], d[1])

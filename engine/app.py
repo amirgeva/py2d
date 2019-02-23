@@ -1,12 +1,18 @@
-import oglblit
+import pygame
 import time
+from engine.keycodes import KeyCodes
 
+app=None
 
 # EXPORT
 class Application(object):
     def __init__(self, res=(640, 480), scale=1.0):
-        oglblit.init(res[0], res[1], scale)
+        global app
+        app = self
+        self.res = res
+        self.screen = pygame.display.set_mode(res)
         self.fps = 30
+        self.keys = []
         self.last_ts = time.time()
 
     def calc_dt(self):
@@ -18,7 +24,7 @@ class Application(object):
         return dt
 
     def flip(self):
-        oglblit.render()
+        pygame.display.flip()
 
     def clear(self, color=(192, 128, 255)):
         pass
@@ -30,9 +36,10 @@ class Application(object):
         pass
 
     def handleEvents(self):
-        self.keys = [int(k) for k in oglblit.get_keys().split()]
-        if 256 in self.keys:
-            return False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return False
+        self.keys = pygame.key.get_pressed()
         return True
 
     def loop(self, dt):
@@ -43,3 +50,18 @@ class Application(object):
             if not self.loop(self.calc_dt()):
                 break
             self.flip()
+
+# EXPORT
+def get_screen_size():
+    return app.res
+
+# EXPORT
+def get_screen():
+    return app.screen
+
+# EXPORT
+def key_down(key_name):
+    if key_name not in KeyCodes:
+        return False
+    code = KeyCodes.get(key_name)
+    return app.keys[code]

@@ -1,25 +1,29 @@
-import oglblit
-from engine.cache import get_sheet, get_sheet_name
+import pygame
+from engine.app import get_screen
+from engine.cache import get_sheet, get_sheet_name, get_mask
 from engine.utils import Rect, Point, parse_rect, parse_float
+from engine.subsheet import Subsheet
 import json
 import os
 
-
 #EXPORT
 class Sprite(object):
-    def __init__(self, sprite_id, duration=0.0):
-        self.sprite_id = sprite_id
-        self.rect=Rect(0,0,oglblit.get_sprite_width(sprite_id),oglblit.get_sprite_height(sprite_id))
+    def __init__(self, surface, rect, duration=0.0):
+        self.pixels = Subsheet(surface,rect)
+        self.mask = get_mask(surface,rect.as_tuple())
         self.duration=duration
 
     def draw(self, position):
-        oglblit.draw_sprite(self.sprite_id, False, position)
+        self.pixels.blit(get_screen(),position)
 
-    def get_height(self):
-        return self.rect.height()
+    def width(self):
+        return self.pixels.width()
+
+    def height(self):
+        return self.pixels.height()
 
     def get_rect(self):
-        return Rect(self.rect)
+        return Rect(0,0,self.width(),self.height())
 
     def serialize(self):
         obj = {
@@ -32,8 +36,8 @@ class Sprite(object):
     def deserialize(texture, obj):
         r = obj['Rect']
         dur = obj['Duration']
-        sprite_id = oglblit.create_sprite(texture,r[0],r[1],r[2],r[3])
-        return Sprite(sprite_id,dur)
+        rect = Rect(r[0],r[1],r[2],r[3])
+        return Sprite(texture,rect,dur)
 
 
 # EXPORT
@@ -56,10 +60,10 @@ class AnimationSequence(object):
             'Frames': frames
         }
 
-    def deserialize(self, texture, seq):
+    def deserialize(self, surface, seq):
         self.sprites=[]
         for frame in seq['Frames']:
-            self.add_sprite(Sprite.deserialize(texture,frame))
+            self.add_sprite(Sprite.deserialize(surface,frame))
 
     def __getitem__(self, index):
         return self.sprites[index]
@@ -159,13 +163,13 @@ class AnimatedSprite(object):
     def get_current_height(self):
         spr = self.get_current_sprite()
         if spr:
-            return spr.get_height()
+            return spr.height()
         return 0
 
     def draw(self, position):
         spr = self.get_current_sprite()
         if spr:
-            oglblit.draw_sprite(spr.sprite_id, False, int(position.x), int(position.y))
+            spr.draw(position)
 
     def get_rect(self):
         spr = self.get_current_sprite()
@@ -229,8 +233,8 @@ def load_str(s):
 #     anim = AnimatedSprite(filename)
 #     i = 0
 #     j = 0
-#     while (y + h) < s.get_height():
-#         while (x + w) < s.get_width():
+#     while (y + h) < s.height():
+#         while (x + w) < s.width():
 #             name = '{},{}'.format(i, j)
 #             print(name)
 #             seq = AnimationSequence(name)
@@ -246,7 +250,7 @@ def load_str(s):
 
 if __name__ == '__main__':
     print(os.getcwd())
-    oglblit.init(800, 600, 1)
-    ship = load_file('ship.json')
-    open('fff.json', 'w').write(ship.serialize())
-    oglblit.deinit()
+    #oglblit.init(800, 600, 1)
+    #ship = load_file('ship.json')
+    #open('fff.json', 'w').write(ship.serialize())
+    #oglblit.deinit()

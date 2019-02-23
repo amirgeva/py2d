@@ -41,6 +41,8 @@ class RTreeNode(object):
             if delta < min_delta:
                 min_delta = delta
                 best_child = c
+        if not best_child:
+            return self.add_item(id,rect)
         return best_child.add_item(id, rect)
 
     def split_node(self, id):
@@ -121,7 +123,6 @@ class RTree(object):
         if id in self.directory:
             node = self.directory.get(id)
             if not node.move(id, rect):
-                self.remove(id)
                 self.add(id, rect)
 
     def remove(self, id):

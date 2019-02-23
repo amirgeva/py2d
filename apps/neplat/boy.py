@@ -10,6 +10,7 @@ class Boy(Walker):
         self.alive=True
         
     def advance(self,dt):
+        self.handle_keys()
         if self.get_position().y>500:
             return False
         return super(Boy,self).advance(dt)
@@ -20,19 +21,19 @@ class Boy(Walker):
         if self.alive:
             return super(Boy,self).collision(other,col_pt)
         
-    def set_keys(self,keys):
+    def handle_keys(self):
         acc=self.get_accel()
         v=self.get_velocity()
         if self.onground>0:
-            if KeyCodes['RIGHT'] in keys:
-                acc.x=150
-            elif KeyCodes['LEFT'] in keys:
-                acc.x=-150
+            if key_down('RIGHT'):
+                acc.x=350
+            elif key_down('LEFT'):
+                acc.x=-350
             else:
                 acc.x=0
         else:
             acc.x=0
-        if KeyCodes['UP'] in keys and self.onground>0:
-            self.set_velocity(v.x,-136)
+        if key_down('UP') and self.onground>0:
+            self.set_velocity(v.x,-200)
         self.set_accel(acc.x,acc.y)
 

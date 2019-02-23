@@ -5,7 +5,7 @@ from engine.utils import vector2
 class Walker(Entity):
     def __init__(self,spr_filename):
         super(Walker,self).__init__(load_file(spr_filename))
-        self.set_accel(0,100)
+        self.set_accel(0,200)
         self.onground=0
 
     def collision(self,other,col_pt):
@@ -20,7 +20,7 @@ class Walker(Entity):
     def get_external_force(self):
         v=self.get_velocity().x
         if self.onground>0:
-            return vector2(-1.5*v,0)
+            return vector2(-2.5*v,0)
         return vector2(-0.1*v,0)
 
     def advance(self,dt):

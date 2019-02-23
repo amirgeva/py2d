@@ -10,7 +10,7 @@ class Tileset(object):
         self.sheet=sheet
         self.first=first
         self.tile_size=tile_size
-        self.grid_size=(sheet.get_width()/tile_size[0],sheet.get_height()/tile_size[1])
+        self.grid_size=(sheet.width()/tile_size[0],sheet.height()/tile_size[1])
         #self.cache={}
         
     def __getitem__(self,index):
@@ -80,7 +80,7 @@ class Tilemap(object):
 
     def draw(self,target):
         for layer in self.layers:
-            items=layer.tree.search(pygame.Rect(0,0,target.get_width(),target.get_height()))
+            items=layer.tree.search(pygame.Rect(0,0,target.width(),target.height()))
             for item in items:
                 tile=item[0]
                 rect=item[1]

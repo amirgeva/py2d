@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import os
 
 from engine import *
-from engine.utils import Rect
+from engine.utils import Rect, Point
+from engine.subsheet import Subsheet
+from engine.cache import cc_masks, get_sheet
+from engine.app import Application
 import json
-import oglblit
+import pygame
 
 
 class AnimationFrame(object):
     def __init__(self):
         self.rect = None
         self.duration = 0.0
-        self.sprite_id = -1
+        self.sprite = None
 
 
-class SpriteSheet(QtGui.QWidget):
+class SpriteSheet(QtWidgets.QWidget):
     def __init__(self, sheet_name, parent=None):
         super(SpriteSheet, self).__init__(parent)
         self.mainwin = parent
@@ -32,14 +35,12 @@ class SpriteSheet(QtGui.QWidget):
         self.sheet = QtGui.QImage(sheet_name)
         self.setMinimumWidth(self.sheet.width())
         self.setMinimumHeight(self.sheet.height())
-        self.texture = oglblit.load_sprites(sheet_name)
-        n = oglblit.get_bounding_box_count(self.texture)
-        for i in range(n):
-            x0 = oglblit.get_bounding_box_coord(self.texture, i, 0)
-            y0 = oglblit.get_bounding_box_coord(self.texture, i, 1)
-            x1 = oglblit.get_bounding_box_coord(self.texture, i, 2)
-            y1 = oglblit.get_bounding_box_coord(self.texture, i, 3)
-            self.rects.append((x0, y0, x1, y1))
+        self.texture = get_sheet(sheet_name)
+        self.rects = []
+        rects = cc_masks(self.texture)
+        for r in rects:
+            self.rects.append(Rect(r.left,r.top,r.right,r.bottom))
+
 
     def set_highlight_rect(self, r):
         self.highlight = r
@@ -53,7 +54,7 @@ class SpriteSheet(QtGui.QWidget):
         x = event.x()
         y = event.y()
         for r in self.rects:
-            if r[2] > x >= r[0] and r[3] > y >= r[1]:
+            if r.right() > x >= r.left() and r.bottom() > y >= r.top():
                 self.mainwin.onRect(r)
 
     def paintEvent(self, event):
@@ -64,15 +65,15 @@ class SpriteSheet(QtGui.QWidget):
         qp.setBrush(QtCore.Qt.NoBrush)
         qp.setPen(QtGui.QColor(255, 0, 0))
         for r in self.rects:
-            qp.drawRect(r[0], r[1], r[2] - r[0], r[3] - r[1])
+            qp.drawRect(r.left(), r.top(), r.width(), r.height())
         qp.setPen(QtGui.QColor(0, 255, 0))
         if self.highlight:
             r = self.highlight
-            qp.drawRect(r[0], r[1], r[2] - r[0], r[3] - r[1])
+            qp.drawRect(r.left(), r.top(), r.width(), r.height())
         qp.end()
 
 
-class SequencesList(QtGui.QListWidget):
+class SequencesList(QtWidgets.QListWidget):
     def __init__(self, parent=None):
         super(SequencesList, self).__init__(parent)
         self.mainwin = parent
@@ -84,11 +85,11 @@ class SequencesList(QtGui.QListWidget):
             self.mainwin.set_current_sequence(sel[0].text())
 
     def contextMenuEvent(self, event):
-        menu = QtGui.QMenu(self)
+        menu = QtWidgets.QMenu(self)
         newAction = menu.addAction("New Sequence")
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == newAction:
-            (name, ok) = QtGui.QInputDialog.getText(self, "Sequence Name", "Name")
+            (name, ok) = QtWidgets.QInputDialog.getText(self, "Sequence Name", "Name")
             if ok:
                 self.mainwin.add_sequence(name)
                 row = self.count()
@@ -97,7 +98,7 @@ class SequencesList(QtGui.QListWidget):
                 self.setCurrentItem(item)
 
 
-class SequenceRectList(QtGui.QListWidget):
+class SequenceRectList(QtWidgets.QListWidget):
     def __init__(self, parent=None):
         super(SequenceRectList, self).__init__(parent)
         self.mainwin = parent
@@ -129,26 +130,26 @@ class SequenceRectList(QtGui.QListWidget):
                 self.mainwin.remove_sprite(self.row(item))
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, sheet_name, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setup_menu()
         self.sheet_name = sheet_name
         self.sheet = SpriteSheet(sheet_name, self)
         self.setCentralWidget(self.sheet)
-        self.paneSequences = QtGui.QDockWidget("Sequences", self)
+        self.paneSequences = QtWidgets.QDockWidget("Sequences", self)
         self.paneSequences.setObjectName("Sequences")
         self.paneSequences.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         self.sequences = SequencesList(self)
-        self.sequences.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.sequences.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.paneSequences.setWidget(self.sequences)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.paneSequences)
 
-        self.paneRects = QtGui.QDockWidget("Sprites", self)
+        self.paneRects = QtWidgets.QDockWidget("Sprites", self)
         self.paneRects.setObjectName("Sprites")
         self.paneRects.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         self.sprites = SequenceRectList(self)
-        self.sprites.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.sprites.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.paneRects.setWidget(self.sprites)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.paneRects)
 
@@ -161,7 +162,12 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.timeout.connect(self.onTimer)
         self.timer.start(100)
 
+    def closeEvent(self, *args, **kwargs):
+        self.timer.stop()
+        super(MainWindow,self).closeEvent(*args,**kwargs)
+
     def onTimer(self):
+        get_screen().fill((0,0,0))
         if not self.current_sequence:
             return
         seq = self.seq_dict.get(self.current_sequence)
@@ -172,11 +178,11 @@ class MainWindow(QtGui.QMainWindow):
             self.animation_frame += 1
             if self.animation_frame >= len(seq):
                 self.animation_frame = 0
-            oglblit.draw_sprite(frame.sprite_id, False, 0, 0)
-            oglblit.render()
+            frame.sprite.blit(get_screen(),Point(0,0))
+            pygame.display.flip()
         else:
             self.animation_frame = 0
-            oglblit.render()
+            pygame.display.flip()
 
     def set_current_sequence(self, name):
         self.current_sequence = name
@@ -195,14 +201,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def remove_sprite(self, index):
         seq = self.seq_dict[self.current_sequence]
-        oglblit.destroy_sprite(seq[index].sprite_id)
         del seq[index]
         self.sprites.update_items(seq)
 
     def edit_duration(self, index):
         seq = self.seq_dict[self.current_sequence]
         duration = float(seq[index][1])
-        (duration, ok) = QtGui.QInputDialog.getDouble(self, 'Duration', 'Duration', duration)
+        (duration, ok) = QtWidgets.QInputDialog.getDouble(self, 'Duration', 'Duration', duration)
         if ok:
             seq[index] = (seq[index][0], duration)
             self.sprites.update_items(seq)
@@ -212,10 +217,9 @@ class MainWindow(QtGui.QMainWindow):
         if len(si) == 1:
             name = si[0].text()
             frame = AnimationFrame()
-            frame.rect = r
+            frame.rect = Rect(r)
             frame.duration = 0.1
-            frame.sprite_id = oglblit.create_sprite(self.sheet.texture, r[0], r[1], r[2], r[3])
-            print("Created sprite id: {}".format(frame.sprite_id))
+            frame.sprite = Subsheet(self.sheet.texture, r)
             self.seq_dict[name].append(frame)
             self.sprites.update_items(self.seq_dict[name])
 
@@ -223,61 +227,62 @@ class MainWindow(QtGui.QMainWindow):
         mb = self.menuBar()
         m = mb.addMenu('&File')
 
-        new_action = QtGui.QAction(QtGui.QIcon('new.png'), '&New', self)
+        new_action = QtWidgets.QAction(QtGui.QIcon('new.png'), '&New', self)
         new_action.setShortcut('Ctrl+N')
         new_action.setStatusTip('New Sprite')
         new_action.triggered.connect(self.on_new)
         m.addAction(new_action)
 
-        open_action = QtGui.QAction(QtGui.QIcon('open.png'), '&Open', self)
+        open_action = QtWidgets.QAction(QtGui.QIcon('open.png'), '&Open', self)
         open_action.setShortcut('Ctrl+O')
         open_action.setStatusTip('Open Sprite')
         open_action.triggered.connect(self.on_open)
         m.addAction(open_action)
 
-        save_action = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)
+        save_action = QtWidgets.QAction(QtGui.QIcon('save.png'), '&Save', self)
         save_action.setShortcut('Ctrl+S')
         save_action.setStatusTip('Save Sprite')
         save_action.triggered.connect(self.on_save)
         m.addAction(save_action)
 
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exitAction = QtWidgets.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application')
         exitAction.triggered.connect(self.close)
         m.addAction(exitAction)
 
     def on_new(self):
-        (filename, ok) = QtGui.QFileDialog.getOpenFileNameAndFilter(self, "Sprite Image Sheet", os.getcwd(), "*.png",
+        (filename, ok) = QtWidgets.QFileDialog.getOpenFileName(self, "Sprite Image Sheet", os.getcwd(), "*.png",
                                                                     "*.png")
         if ok:
             self.seq_dict = {}
             self.sequences.clear()
             self.sprites.clear()
+            self.sheet_name = filename
             self.sheet.load_image(filename)
-            print("Texture={}".format(self.sheet.texture))
 
     def on_open(self):
-        (filename, ok) = QtGui.QFileDialog.getOpenFileNameAndFilter(self, "Load Sprite", os.getcwd(), "*.json",
+        (filename, ok) = QtWidgets.QFileDialog.getOpenFileName(self, "Load Sprite", os.getcwd(), "*.json",
                                                                     "*.json")
         if ok:
             self.current_sequence = ''
             root = json.load(open(filename, 'r'))
-            sheet_name = root.get('Image')
+            self.sheet_name = root.get('Image')
             self.seq_dict = {}
             self.sequences.clear()
             self.sprites.clear()
-            self.sheet.load_image(sheet_name)
+            self.sheet.load_image(self.sheet_name)
             for seq in root.get('Sequences'):
                 name = seq.get('Name')
                 self.sequences.addItem(name)
                 frames = []
                 for frame_dict in seq.get('Frames'):
                     frame = AnimationFrame()
-                    frame.rect = tuple(frame_dict.get('Rect'))
+                    r = tuple(frame_dict.get('Rect'))
                     frame.duration = frame_dict.get('Duration')
-                    r = frame.rect
-                    frame.sprite_id = oglblit.create_sprite(self.sheet.texture, r[0], r[1], r[2], r[3])
+                    r = Rect(r[0],r[1],r[2],r[3])
+                    frame.rect = r
+                    frame.sprite = Subsheet(self.sheet.texture, r)
                     frames.append(frame)
                 self.seq_dict[name] = frames
                 self.animation_frame = 0
@@ -286,15 +291,16 @@ class MainWindow(QtGui.QMainWindow):
             self.sequences.setCurrentItem(self.sequences.item(0))
 
     def on_save(self):
-        (filename, ok) = QtGui.QFileDialog.getSaveFileNameAndFilter(self, "Save", os.getcwd(), "*.json", "*.json")
+        (filename, ok) = QtWidgets.QFileDialog.getSaveFileName(self, "Save", os.getcwd(), "*.json", "*.json")
         if ok:
-            root = {"Image": self.sheet_name, "Flags": ''}
+            filename = os.path.basename(self.sheet_name)
+            root = {"Image": filename, "Flags": ''}
             sequences = []
             for name in self.seq_dict:
                 frames = []
                 seq = self.seq_dict.get(name)
                 for frame in seq:
-                    frames.append({"Rect": list(frame.rect), "Duration": frame.duration})
+                    frames.append({"Rect": frame.rect.coords(), "Duration": frame.duration})
                 sequences.append({"Name": name, "BaseVelocity": 1.0, "Frames": frames})
             root['Sequences'] = sequences
             open(filename, 'w').write(json.dumps(root, indent=4))
@@ -304,12 +310,12 @@ def main():
     arg = ''
     if len(sys.argv) > 1:
         arg = sys.argv[1]
-    oglblit.init(320, 320, 1)
-    app = QtGui.QApplication(sys.argv)
+    pygame.init()
+    a=Application((640,480))
+    app = QtWidgets.QApplication(sys.argv)
     w = MainWindow(arg)
     w.show()
     app.exec_()
-    oglblit.deinit()
 
 
 if __name__ == '__main__':

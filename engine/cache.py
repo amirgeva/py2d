@@ -1,4 +1,4 @@
-import oglblit
+import pygame
 
 
 # def generate_checkers():
@@ -14,6 +14,21 @@ import oglblit
 #             pygame.draw.rect(s, colors[dark], pygame.Rect(x * 8, y * 8, 8, 8))
 #     return s
 
+class SurfaceDetails:
+    def __init__(self,surface):
+        self.surface=surface
+        self.masks={}
+
+    def get_mask(self,const_rect):
+        if const_rect not in self.masks:
+            sub = self.surface.subsurface(const_rect)
+            mask = pygame.mask.from_surface(sub)
+            self.masks[const_rect]=mask
+        return self.masks.get(const_rect)
+
+    def cc_masks(self):
+        return pygame.mask.from_surface(self.surface).get_bounding_rects()
+
 
 surfaces = {}
 
@@ -21,19 +36,34 @@ surfaces = {}
 # EXPORT
 def get_sheet(filename):
     if filename in surfaces:
-        return surfaces.get(filename)
+        return surfaces.get(filename).surface
     #    if filename=='checkers':
     #        s=generate_checkers()
     #    else:
-    s = oglblit.load_sprites(filename)
-    surfaces[filename] = s
+    s = pygame.image.load(filename)
+    surfaces[filename] = SurfaceDetails(s)
     return s
 
 
 # EXPORT
 def get_sheet_name(sheet):
     for filename in surfaces.keys():
-        if surfaces.get(filename) == sheet:
+        if surfaces.get(filename).surface is sheet:
             return filename
     return ''
+
+
+#EXPORT
+def get_mask(sheet,const_rect):
+    name = get_sheet_name(sheet)
+    if not name:
+        return None
+    return surfaces.get(name).get_mask(const_rect)
+
+#EXPORT
+def cc_masks(sheet):
+    name = get_sheet_name(sheet)
+    if not name:
+        return None
+    return surfaces.get(name).cc_masks()
 

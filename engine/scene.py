@@ -1,4 +1,4 @@
-import oglblit
+import pygame
 from engine.rtree import RTree
 from engine.utils import Point
 
@@ -23,7 +23,8 @@ class Scene(object):
 
     def advance(self, dt):
         dels = []
-        for id in self.dynamics:
+        ids=set(self.dynamics)
+        for id in ids:
             e = self.entities.get(id)
             before = e.get_rect()
             if not e.advance(dt):
@@ -52,18 +53,17 @@ class Scene(object):
 
     def check_collisions(self, entity, rect):
         id = entity.get_id()
-        spr1=entity.anim.get_current_sprite().sprite_id
+        spr1=entity.anim.get_current_sprite()
         cands = self.rtree.search(rect)
         for (cand_id, cand_rect) in cands:
             if cand_id != id:
                 cand = self.entities.get(cand_id)
-                spr2 = cand.anim.get_current_sprite().sprite_id
+                spr2 = cand.anim.get_current_sprite()#.sprite_id
                 offset = cand.get_position() - entity.get_position()
                 ox = int(offset.x)
                 oy = int(offset.y)
-                pts = oglblit.check_collision(spr1,spr2,ox,oy)
-                if pts > 0:
-                    dx = oglblit.get_collision_x()
-                    dy = oglblit.get_collision_y()
+                pt = spr1.mask.overlap(spr2.mask,(ox,oy))
+                if pt is not None:
+                    dx,dy=pt
                     entity.collision(cand, Point(dx, dy))
-                    cand.collision(entity, Point(dx-ox, dy-oy))
+                    cand.collision(entity, Point(dx - ox, dy - oy))

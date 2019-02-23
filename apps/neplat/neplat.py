@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-import oglblit
+import pygame
 from engine import *
 from engine.utils import vector2
 from platform import generate_level
@@ -18,8 +18,7 @@ class Game(Application):
         self.keys=[]
 
     def loop(self,dt):
-        dt=0.033
-        self.boy.set_keys(self.keys)
+        #dt=0.033
         self.scene.advance(dt)
         vy=self.view.get_position().y
         self.view.set_position(vector2(self.boy.get_position().x-300,vy))
@@ -27,6 +26,7 @@ class Game(Application):
         return True
 
     def draw(self):
+        get_screen().fill((0,0,0))
         self.scene.draw(self.view)
 
 

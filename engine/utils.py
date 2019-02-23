@@ -16,6 +16,9 @@ class Point(object):
                 self.y = args[0][1]
             else:
                 raise TypeError()
+                
+    def as_tuple(self):
+        return (self.x,self.y)
 
     def __str__(self):
         return '{},{}'.format(self.x, self.y)
@@ -114,6 +117,24 @@ class Rect(object):
         return Rect(min(self.tl.x, self.br.x), min(self.tl.y, self.br.y),
                     max(self.tl.x, self.br.x), max(self.tl.y, self.br.y))
 
+    def coords(self):
+        return [self.tl.x, self.tl.y, self.br.x, self.br.y]
+
+    def as_tuple(self):
+        return (self.tl.x,self.tl.y,self.width(),self.height())
+
+    def left(self):
+        return self.tl.x
+
+    def top(self):
+        return self.tl.y
+
+    def right(self):
+        return self.br.x
+
+    def bottom(self):
+        return self.br.y
+                    
     def width(self):
         return self.br.x - self.tl.x
 
@@ -197,8 +218,8 @@ def parse_float(s):
 
 # EXPORT
 def is_transparent(s):
-    w = s.get_width()
-    h = s.get_height()
+    w = s.width()
+    h = s.height()
     for y in range(h):
         for x in range(w):
             c = s.get_at((x, y))
@@ -224,4 +245,4 @@ def parse_color(s):
 
 # EXPORT
 def all_pixels(s):
-    return itertools.product(range(s.get_width()), range(s.get_height()))
+    return itertools.product(range(s.width()), range(s.height()))
