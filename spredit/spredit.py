@@ -31,6 +31,7 @@ class SpriteSheet(QtWidgets.QWidget):
             self.load_image(sheet_name)
 
     def load_image(self, sheet_name):
+        sheet_name = os.path.normpath(sheet_name)
         self.rects = []
         self.sheet = QtGui.QImage(sheet_name)
         self.setMinimumWidth(self.sheet.width())
@@ -161,6 +162,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.onTimer)
         self.timer.start(100)
+        self.frame_time_left=0.0
 
     def closeEvent(self, *args, **kwargs):
         self.timer.stop()
@@ -173,16 +175,19 @@ class MainWindow(QtWidgets.QMainWindow):
         seq = self.seq_dict.get(self.current_sequence)
         if not seq:
             return
-        if self.animation_frame < len(seq):
-            frame = seq[self.animation_frame]
-            self.animation_frame += 1
-            if self.animation_frame >= len(seq):
+        self.frame_time_left = self.frame_time_left - 0.1
+        if self.frame_time_left <= 0.0:
+            if self.animation_frame < len(seq):
+                frame = seq[self.animation_frame]
+                self.animation_frame += 1
+                if self.animation_frame >= len(seq):
+                    self.animation_frame = 0
+                self.frame_time_left = seq[self.animation_frame].duration
+                frame.sprite.blit(get_screen(),Point(0,0))
+                pygame.display.flip()
+            else:
                 self.animation_frame = 0
-            frame.sprite.blit(get_screen(),Point(0,0))
-            pygame.display.flip()
-        else:
-            self.animation_frame = 0
-            pygame.display.flip()
+                pygame.display.flip()
 
     def set_current_sequence(self, name):
         self.current_sequence = name
@@ -206,10 +211,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def edit_duration(self, index):
         seq = self.seq_dict[self.current_sequence]
-        duration = float(seq[index][1])
+        duration = float(seq[index].duration)
         (duration, ok) = QtWidgets.QInputDialog.getDouble(self, 'Duration', 'Duration', duration)
         if ok:
-            seq[index] = (seq[index][0], duration)
+            seq[index].duration = duration
             self.sprites.update_items(seq)
 
     def onRect(self, r):
@@ -264,7 +269,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_open(self):
         (filename, ok) = QtWidgets.QFileDialog.getOpenFileName(self, "Load Sprite", os.getcwd(), "*.json",
                                                                     "*.json")
-        if ok:
+        if ok and filename:
             self.current_sequence = ''
             root = json.load(open(filename, 'r'))
             self.sheet_name = root.get('Image')
@@ -291,10 +296,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.sequences.setCurrentItem(self.sequences.item(0))
 
     def on_save(self):
-        (filename, ok) = QtWidgets.QFileDialog.getSaveFileName(self, "Save", os.getcwd(), "*.json", "*.json")
-        if ok:
-            filename = os.path.basename(self.sheet_name)
-            root = {"Image": filename, "Flags": ''}
+        (filename, filter) = QtWidgets.QFileDialog.getSaveFileName(self, "Save", os.getcwd(), "*.json", "*.json")
+        if filename:
+            imagename = os.path.basename(self.sheet_name)
+            root = {"Image": imagename, "Flags": ''}
             sequences = []
             for name in self.seq_dict:
                 frames = []

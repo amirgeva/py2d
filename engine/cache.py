@@ -40,6 +40,7 @@ def get_sheet(filename):
     #    if filename=='checkers':
     #        s=generate_checkers()
     #    else:
+    print("Load: '{}'".format(filename))
     s = pygame.image.load(filename)
     surfaces[filename] = SurfaceDetails(s)
     return s
