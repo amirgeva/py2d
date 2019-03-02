@@ -34,6 +34,6 @@ class Boy(Walker):
         else:
             acc.x=0
         if key_down('UP') and self.onground>0:
-            self.set_velocity(v.x,-200)
+            self.set_velocity(v.x,-220)
         self.set_accel(acc.x,acc.y)
 
