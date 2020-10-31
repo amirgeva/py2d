@@ -16,9 +16,9 @@ class Point(object):
                 self.y = args[0][1]
             else:
                 raise TypeError()
-                
+
     def as_tuple(self):
-        return (self.x,self.y)
+        return self.x, self.y
 
     def __str__(self):
         return '{},{}'.format(self.x, self.y)
@@ -74,16 +74,17 @@ class Point(object):
         return Point(self.x - p.x, self.y - p.y)
 
     def __neg__(self):
-        return Point(-self.x,-self.y)
+        return Point(-self.x, -self.y)
 
     def scaled(self, s):
-        return Point(self.x*s, self.y*s)
+        return Point(self.x * s, self.y * s)
 
     def length(self):
-        return math.sqrt(self.x*self.x + self.y*self.y)
+        return math.sqrt(self.x * self.x + self.y * self.y)
 
     def norm(self):
         return self.length()
+
 
 # EXPORT
 def vector2(*args):
@@ -121,7 +122,7 @@ class Rect(object):
         return [self.tl.x, self.tl.y, self.br.x, self.br.y]
 
     def as_tuple(self):
-        return (self.tl.x,self.tl.y,self.width(),self.height())
+        return self.tl.x, self.tl.y, self.width(), self.height()
 
     def left(self):
         return self.tl.x
@@ -134,7 +135,7 @@ class Rect(object):
 
     def bottom(self):
         return self.br.y
-                    
+
     def width(self):
         return self.br.x - self.tl.x
 
@@ -195,15 +196,12 @@ class Rect(object):
     def __repr__(self):
         return '{},{},{},{}'.format(self.tl.x, self.tl.y, self.br.x, self.br.y)
 
+
 # EXPORT
 def parse_rect(s):
     try:
-        c = s.split(',')
-        x0 = int(c[0])
-        y0 = int(c[1])
-        x1 = int(c[2])
-        y1 = int(c[3])
-        return Rect(x0, y0, x1, y1)
+        c = tuple([int(p) for p in s.split(',')])
+        return Rect(*c)
     except ValueError:
         return Rect(0, 0, 1, 1)
 

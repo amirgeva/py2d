@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys
 from engine.utils import Rect
 from random import randint, seed
 
@@ -183,7 +184,9 @@ def unit_test():
     fail = False
     rects = 0
     for i in range(10000):
-        print("{} {} {}".format(i, rects, t1.depth()))
+        if (i&255)==0:
+            sys.stdout.write(f'{i}\r')
+        #print(f"{i} {rects} {t1.depth()}")
         if fail:
             break
         act = randint(0, 100)

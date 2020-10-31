@@ -2,7 +2,8 @@ import pygame
 import time
 from engine.keycodes import KeyCodes
 
-app=None
+app = None
+
 
 # EXPORT
 class Application(object):
@@ -18,12 +19,13 @@ class Application(object):
     def calc_dt(self):
         cur = time.time()
         dt = cur - self.last_ts
-        #print("dt={}".format(dt))
+        # print("dt={}".format(dt))
         self.last_ts = cur
         self.fps = 0.9 * self.fps + 0.1 / dt
         return dt
 
-    def flip(self):
+    @staticmethod
+    def flip():
         pygame.display.flip()
 
     def clear(self, color=(192, 128, 255)):
@@ -51,13 +53,16 @@ class Application(object):
                 break
             self.flip()
 
+
 # EXPORT
 def get_screen_size():
     return app.res
 
+
 # EXPORT
 def get_screen():
     return app.screen
+
 
 # EXPORT
 def key_down(key_name):
