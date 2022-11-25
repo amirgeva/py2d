@@ -1,4 +1,3 @@
-import pygame
 from engine.rtree import RTree
 from engine.utils import Point
 
@@ -6,64 +5,64 @@ from engine.utils import Point
 # EXPORT
 class Scene(object):
     def __init__(self):
-        self.entities = {}
-        self.dynamics = set()
-        self.statics = set()
-        self.rtree = RTree()
+        self._entities = {}
+        self._dynamics = set()
+        self._statics = set()
+        self._rtree = RTree()
 
     def add(self, entity):
-        id = entity.get_id()
-        self.entities[id] = entity
+        entity_id = entity.get_id()
+        self._entities[entity_id] = entity
         if entity.is_dynamic():
-            self.dynamics.add(id)
+            self._dynamics.add(entity_id)
         else:
-            self.statics.add(id)
+            self._statics.add(entity_id)
         r = entity.get_rect()
-        self.rtree.add(id, r)
+        self._rtree.add(entity_id, r)
 
     def advance(self, dt):
-        dels = []
-        ids=set(self.dynamics)
-        for id in ids:
-            e = self.entities.get(id)
+        to_delete = []
+        ids = set(self._dynamics)
+        for entity_id in ids:
+            e = self._entities.get(entity_id)
             before = e.get_rect()
             if not e.advance(dt):
-                dels.append(id)
+                to_delete.append(entity_id)
             else:
                 after = e.get_rect()
                 if before != after:
                     self.check_collisions(e, after)
                     after = e.get_rect()
-                    self.rtree.move(e.get_id(), after)
-        if len(dels) > 0:
-            for id in dels:
-                self.rtree.remove(id)
-                self.dynamics.remove(id)
-                del self.entities[id]
+                    self._rtree.move(e.get_id(), after)
+        if len(to_delete) > 0:
+            for entity_id in to_delete:
+                self._rtree.remove(entity_id)
+                self._dynamics.remove(entity_id)
+                del self._entities[entity_id]
 
     def draw(self, view):
-        visible = self.rtree.search(view.get_rect())
+        visible = self._rtree.search(view.get_rect())
         vis_id = [v[0] for v in visible]
-        ids = [id for id in vis_id if id in self.statics]
-        ids.extend([id for id in vis_id if id not in self.statics])
-        for id in ids:
-            e = self.entities.get(id)
+        ids = [entity_id for entity_id in vis_id if entity_id in self._statics]
+        ids.extend([entity_id for entity_id in vis_id if entity_id not in self._statics])
+        for entity_id in ids:
+            e = self._entities.get(entity_id)
             if e:
                 e.draw(view)
 
     def check_collisions(self, entity, rect):
-        id = entity.get_id()
-        spr1=entity.anim.get_current_sprite()
-        cands = self.rtree.search(rect)
-        for (cand_id, cand_rect) in cands:
-            if cand_id != id:
-                cand = self.entities.get(cand_id)
-                spr2 = cand.anim.get_current_sprite()#.sprite_id
+        entity_id = entity.get_id()
+        spr1 = entity.anim.get_current_sprite()
+        candidates = self._rtree.search(rect)
+        for (cand_id, cand_rect) in candidates:
+            if cand_id != entity_id:
+                cand = self._entities.get(cand_id)
+                spr2 = cand.anim.get_current_sprite()  # .sprite_id
                 offset = cand.get_position() - entity.get_position()
                 ox = int(offset.x)
                 oy = int(offset.y)
-                pt = spr1.mask.overlap(spr2.mask,(ox,oy))
+                pt = spr1._mask.overlap(spr2._mask, (ox, oy))
                 if pt is not None:
-                    dx,dy=pt
+                    dx, dy = pt
                     entity.collision(cand, Point(dx, dy))
                     cand.collision(entity, Point(dx - ox, dy - oy))

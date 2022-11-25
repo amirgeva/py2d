@@ -12,7 +12,7 @@ sheet = None
 
 class Blocker(Entity):
     def __init__(self):
-        super(Blocker, self).__init__(load_json_file("blockers.json"))
+        super().__init__(load_json_file("blockers.json"))
         self.anim.set_active_sequence("b1")
 
     def get_type(self):
@@ -21,13 +21,13 @@ class Blocker(Entity):
 
 class Bomb(Entity):
     def __init__(self):
-        super(Bomb, self).__init__(load_json_file("bomb.json"))
+        super().__init__(load_json_file("bomb.json"))
         self.alive = True
         self.set_velocity(0, 80)
-        self.set_accel(0, 50)
+        self.set_acceleration(0, 50)
 
     def advance(self, dt):
-        super(Bomb, self).advance(dt)
+        super().advance(dt)
         if self.get_position().y > 1000:
             self.alive = False
         return self.alive
@@ -40,14 +40,14 @@ class Bomb(Entity):
 
 class Missile(Entity):
     def __init__(self):
-        super(Missile, self).__init__(load_json_file("missile.json"))
+        super().__init__(load_json_file("missile.json"))
         self.alive = True
 
     def get_type(self):
         return "Missile"
 
     def advance(self, dt):
-        super(Missile, self).advance(dt)
+        super().advance(dt)
         if self.get_position().y < -100:
             self.alive = False
         return self.alive
@@ -58,7 +58,7 @@ class Missile(Entity):
 
 class SmallMonster(Entity):
     def __init__(self, type=-1):
-        super(SmallMonster, self).__init__(load_json_file("smalls.json"))
+        super().__init__(load_json_file("smalls.json"))
         self.alive = True
         if type <= 0:
             type = random.randint(1, 12)
@@ -66,7 +66,7 @@ class SmallMonster(Entity):
         self.group = None
 
     def advance(self, dt):
-        super(SmallMonster, self).advance(dt)
+        super().advance(dt)
         return self.alive
 
     def get_type(self):
@@ -120,7 +120,7 @@ class MonsterGroup(object):
 
 class Ship(Entity):
     def __init__(self, scene):
-        super(Ship, self).__init__(load_json_file("ship.json"))
+        super().__init__(load_json_file("ship.json"))
         self.set_position(10, 550)
         self.anim.set_active_sequence("ship")
         self.scene = scene
@@ -149,7 +149,7 @@ class Ship(Entity):
 
     def advance(self, dt):
         self.handle_keys()
-        super(Ship, self).advance(dt)
+        super().advance(dt)
         p = self.get_position()
         if p.x > 750:
             self.set_position(750, p.y)
@@ -160,7 +160,7 @@ class Ship(Entity):
 
 class Game(Application):
     def __init__(self):
-        super(Game, self).__init__(res=(800, 600), scale=1.5)
+        super().__init__(res=(800, 600), scale=1.5)
         self.keys = []
         global sheet
         sheet = get_sheet('tinvader.png')

@@ -1,4 +1,3 @@
-import engine.sprite
 from engine.physics import RigidBody
 
 ids = 0
@@ -13,7 +12,7 @@ def generate_id():
 # EXPORT
 class Entity(RigidBody):
     def __init__(self, anim):
-        super(Entity, self).__init__()
+        super().__init__()
         self.anim = anim
         self.id = generate_id()
         self.dynamic = True
@@ -25,8 +24,8 @@ class Entity(RigidBody):
         return self.dynamic
 
     def advance(self, dt):
-        super(Entity, self).advance(dt)
-        self.anim.advance(dt, self.velocity)
+        super().advance(dt)
+        self.anim.advance(dt, self._velocity)
         return True
 
     def draw(self, view):

@@ -1,8 +1,9 @@
 import pygame
+from engine.utils import Rect
 
 
 class Subsheet:
-    def __init__(self, surface, rect):
+    def __init__(self, surface: pygame.Surface, rect: Rect):
         self.surface = surface
         self.rect = rect
 

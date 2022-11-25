@@ -1,3 +1,4 @@
+from typing import Dict
 import pygame
 
 
@@ -15,56 +16,50 @@ import pygame
 #     return s
 
 class SurfaceDetails:
-    def __init__(self,surface):
-        self.surface=surface
-        self.masks={}
+    def __init__(self, surface: pygame.Surface):
+        self.surface = surface
+        self.masks = {}
 
-    def get_mask(self,const_rect):
+    def get_mask(self, const_rect):
         if const_rect not in self.masks:
             sub = self.surface.subsurface(const_rect)
             mask = pygame.mask.from_surface(sub)
-            self.masks[const_rect]=mask
+            self.masks[const_rect] = mask
         return self.masks.get(const_rect)
 
     def cc_masks(self):
         return pygame.mask.from_surface(self.surface).get_bounding_rects()
 
 
-surfaces = {}
+surfaces: Dict[str, SurfaceDetails] = {}
 
 
 # EXPORT
-def get_sheet(filename):
-    if filename in surfaces:
-        return surfaces.get(filename).surface
-    #    if filename=='checkers':
-    #        s=generate_checkers()
-    #    else:
-    print("Load: '{}'".format(filename))
-    s = pygame.image.load(filename)
-    surfaces[filename] = SurfaceDetails(s)
-    return s
+def get_sheet(filename: str):
+    if filename not in surfaces:
+        surfaces[filename] = SurfaceDetails(pygame.image.load(filename))
+    return surfaces.get(filename).surface
 
 
 # EXPORT
-def get_sheet_name(sheet):
-    for filename in surfaces.keys():
+def get_sheet_name(sheet: pygame.Surface):
+    for filename in surfaces:
         if surfaces.get(filename).surface is sheet:
             return filename
     return ''
 
 
-#EXPORT
-def get_mask(sheet,const_rect):
+# EXPORT
+def get_mask(sheet, const_rect):
     name = get_sheet_name(sheet)
     if not name:
         return None
     return surfaces.get(name).get_mask(const_rect)
 
-#EXPORT
+
+# EXPORT
 def cc_masks(sheet):
     name = get_sheet_name(sheet)
     if not name:
         return None
     return surfaces.get(name).cc_masks()
-

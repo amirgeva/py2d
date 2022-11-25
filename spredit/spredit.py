@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PIL import Image
-import cv2
+from cv2 import cv2
 import numpy as np
 import sys
 import os
@@ -36,15 +36,15 @@ def scan_ccs(img):
     """
     Finds all connected components in the alpha channel
     :param img:
-    :return: list of rects
+    :return: list of rectangles
     """
-    rects = []
+    rectangles = []
     alpha = img[:, :, 3]
-    contours, hier = cv2.findContours(alpha, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    contours, _ = cv2.findContours(alpha, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     for c in contours:
         r = cv2.boundingRect(c)
-        rects.append(QtCore.QRect(*r))
-    return rects
+        rectangles.append(QtCore.QRect(*r))
+    return rectangles
 
 
 class AnimationFrame(object):
@@ -56,13 +56,13 @@ class AnimationFrame(object):
 
 class SpriteSheet(QtWidgets.QWidget):
     def __init__(self, sheet_name, parent=None):
-        super(SpriteSheet, self).__init__(parent)
+        super().__init__(parent)
         self.mainwin = parent
         self.image = None
         self.sheet = None
         self.scale = 4
-        self.rects = []
-        self.empty_rects = []
+        self.rectangles = []
+        self.empty_rectangles = []
         self.texture = None
         self.highlight = None
         self.sel_rect = None
@@ -76,11 +76,11 @@ class SpriteSheet(QtWidgets.QWidget):
         menu.addAction(copy_action)
 
         copy_hflip_action = QtWidgets.QAction('Copy H-Flip')
-        copy_hflip_action.triggered.connect(self.copy_hflip)
+        copy_hflip_action.triggered.connect(self.copy_horizontal_flip)
         menu.addAction(copy_hflip_action)
 
         copy_vflip_action = QtWidgets.QAction('Copy V-Flip')
-        copy_vflip_action.triggered.connect(self.copy_vflip)
+        copy_vflip_action.triggered.connect(self.copy_vertical_flip)
         menu.addAction(copy_vflip_action)
 
         paste_action = QtWidgets.QAction('Paste')
@@ -103,12 +103,12 @@ class SpriteSheet(QtWidgets.QWidget):
             else:
                 clipboard.append(sub)
 
-    def copy_hflip(self):
+    def copy_horizontal_flip(self):
         self.copy_rect()
         if len(clipboard) > 0:
             clipboard[0] = cv2.flip(clipboard[0], 1)
 
-    def copy_vflip(self):
+    def copy_vertical_flip(self):
         self.copy_rect()
         if len(clipboard) > 0:
             clipboard[0] = cv2.flip(clipboard[0], 0)
@@ -117,7 +117,7 @@ class SpriteSheet(QtWidgets.QWidget):
         if len(clipboard) > 0:
             r = self.sel_rect
             self.image[r.top():(r.bottom() + 1), r.left():(r.right() + 1), :] = clipboard[0]
-            self.scan_empty_rects()
+            self.scan_empty_rectangles()
             self.update()
 
     def clear(self):
@@ -125,7 +125,7 @@ class SpriteSheet(QtWidgets.QWidget):
             r = self.sel_rect
             sub = self.image[r.top():(r.bottom() + 1), r.left():(r.right() + 1), :]
             sub[:] = (0, 0, 0, 0)
-            self.scan_empty_rects()
+            self.scan_empty_rectangles()
             self.update()
 
     def zoom_in(self):
@@ -145,46 +145,47 @@ class SpriteSheet(QtWidgets.QWidget):
                                                QtWidgets.QMessageBox.No)
             if r != QtWidgets.QMessageBox.Yes:
                 return False
-        bgra = cv2.cvtColor(self.image, cv2.COLOR_RGBA2BGRA)
-        cv2.imwrite(filename, bgra)
+        color_image = cv2.cvtColor(self.image, cv2.COLOR_RGBA2BGRA)
+        cv2.imwrite(filename, color_image)
         return True
 
-    def load_image(self, sheet_name):
+    def load_image(self, sheet_name: str):
         sheet_name = os.path.normpath(sheet_name)
-        self.image = np.array(Image.open(sheet_name).convert('RGBA'))
+        image = Image.open(sheet_name).convert('RGBA')
+        self.image = np.array(image)
         h, w, c = self.image.shape
         pitch = w * c
-        self.rects = []
+        self.rectangles = []
         self.sheet = QtGui.QImage(self.image.data, w, h, pitch, QtGui.QImage.Format_RGBA8888)
         self.setMinimumWidth(self.sheet.width())
         self.setMinimumHeight(self.sheet.height())
-        self.rects = scan_ccs(self.image)
-        self.empty_rects = []
+        self.rectangles = scan_ccs(self.image)
+        self.empty_rectangles = []
 
-    def scan_empty_rects(self):
-        self.empty_rects = []
-        for r in self.rects:
+    def scan_empty_rectangles(self):
+        self.empty_rectangles = []
+        for r in self.rectangles:
             alpha = self.image[:, :, 3]
             sub = alpha[r.top():r.bottom(), r.left():r.right()]
             if np.max(sub) == 0:
-                self.empty_rects.append(r)
+                self.empty_rectangles.append(r)
 
     def set_tile_size(self, tile_size, gap_size):
         w = self.sheet.width()
         h = self.sheet.height()
         nw = w // (tile_size + gap_size)
         nh = h // (tile_size + gap_size)
-        self.rects = []
+        self.rectangles = []
         x = gap_size
         y = gap_size
         for i in range(nh):
             for j in range(nw):
                 r = QtCore.QRect(x, y, tile_size, tile_size)
-                self.rects.append(r)
+                self.rectangles.append(r)
                 x = x + tile_size + gap_size
             x = gap_size
             y = y + tile_size + gap_size
-        self.scan_empty_rects()
+        self.scan_empty_rectangles()
 
     def set_highlight_rect(self, r):
         self.highlight = r
@@ -198,10 +199,10 @@ class SpriteSheet(QtWidgets.QWidget):
         x = event.x() / self.scale
         y = event.y() / self.scale
         ctrl = (event.modifiers() & QtCore.Qt.ControlModifier) == QtCore.Qt.ControlModifier
-        alt = (event.modifiers() & QtCore.Qt.AltModifier) == QtCore.Qt.AltModifier
+        # alt = (event.modifiers() & QtCore.Qt.AltModifier) == QtCore.Qt.AltModifier
         print(event.modifiers())
         sel_rect = None
-        for r in self.rects:
+        for r in self.rectangles:
             if r.right() > x >= r.left() and r.bottom() > y >= r.top():
                 sel_rect = r
                 break
@@ -225,11 +226,11 @@ class SpriteSheet(QtWidgets.QWidget):
             qp.drawImage(r, self.sheet)
         qp.setBrush(QtCore.Qt.NoBrush)
         qp.setPen(QtGui.QColor(255, 0, 0))
-        for r in self.rects:
+        for r in self.rectangles:
             qp.drawRect(self.scale * r.left(), self.scale * r.top(),
                         self.scale * r.width(), self.scale * r.height())
         qp.setPen(QtGui.QColor(128, 255, 0))
-        for r in self.empty_rects:
+        for r in self.empty_rectangles:
             qp.drawRect(self.scale * r.left(), self.scale * r.top(),
                         self.scale * r.width(), self.scale * r.height())
         qp.setPen(QtGui.QColor(0, 255, 0))
@@ -242,7 +243,7 @@ class SpriteSheet(QtWidgets.QWidget):
 
 class SequencesList(QtWidgets.QListWidget):
     def __init__(self, parent=None):
-        super(SequencesList, self).__init__(parent)
+        super().__init__(parent)
         self.mainwin = parent
         self.itemSelectionChanged.connect(self.on_selection)
 
@@ -279,7 +280,7 @@ class SequencesList(QtWidgets.QListWidget):
 
 class SequenceRectList(QtWidgets.QListWidget):
     def __init__(self, parent=None):
-        super(SequenceRectList, self).__init__(parent)
+        super().__init__(parent)
         self.mainwin = parent
         self.itemDoubleClicked.connect(self.onItemDoubleClicked)
         self.itemSelectionChanged.connect(self.on_selection)
@@ -297,7 +298,7 @@ class SequenceRectList(QtWidgets.QListWidget):
     def update_items(self, seq):
         self.clear()
         for frame in seq:
-            self.add_rect(frame.rect, frame.duration)
+            self.add_rect(frame._rect, frame._duration)
 
     # noinspection PyPep8Naming
     def onItemDoubleClicked(self, item):
@@ -312,7 +313,7 @@ class SequenceRectList(QtWidgets.QListWidget):
 
 class AnimationWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(AnimationWidget, self).__init__(parent)
+        super().__init__(parent)
         self.image = None
         self.src = None
         self.scale = 1
@@ -335,7 +336,7 @@ class AnimationWidget(QtWidgets.QWidget):
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, filename, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setup_menu()
         self.sheet_name = filename
         self.sheet = SpriteSheet(filename, self)
@@ -380,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, *args, **kwargs):
         self.timer.stop()
-        super(MainWindow, self).closeEvent(*args, **kwargs)
+        super().closeEvent(*args, **kwargs)
 
     def on_timer(self):
         # get_screen().fill((0, 0, 0))
@@ -396,8 +397,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.animation_frame += 1
                 if self.animation_frame >= len(seq):
                     self.animation_frame = 0
-                self.frame_time_left = seq[self.animation_frame].duration
-                self.animation.set_source_rect(frame.rect)
+                self.frame_time_left = seq[self.animation_frame]._duration
+                self.animation.set_source_rect(frame._rect)
             else:
                 self.animation_frame = 0
 
@@ -409,7 +410,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.current_sequence:
             seq = self.seq_dict[self.current_sequence]
             if frame_index < len(seq):
-                self.sheet.set_highlight_rect(seq[frame_index].rect)
+                self.sheet.set_highlight_rect(seq[frame_index]._rect)
             else:
                 self.sheet.clear_highlight()
 
@@ -431,10 +432,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def edit_duration(self, index):
         seq = self.seq_dict[self.current_sequence]
-        duration = float(seq[index].duration)
+        duration = float(seq[index]._duration)
         (duration, ok) = QtWidgets.QInputDialog.getDouble(self, 'Duration', 'Duration', duration)
         if ok:
-            seq[index].duration = duration
+            seq[index]._duration = duration
             self.sprites.update_items(seq)
 
     def on_rect(self, r):
@@ -582,7 +583,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 frames = []
                 seq = self.seq_dict.get(name)
                 for frame in seq:
-                    frames.append({"Rect": comma(frame.rect), "Duration": frame.duration})
+                    frames.append({"Rect": comma(frame._rect), "Duration": frame._duration})
                 sequences.append({"Name": name, "BaseVelocity": 1.0, "Frames": frames})
             root['Sequences'] = sequences
             open(filename, 'w').write(json.dumps(root, indent=4))

@@ -24,6 +24,7 @@ from engine.utils import all_pixels
 from engine.view import View
 from engine.keycodes import *
 
-
-__all__ = [ 'Application','get_screen_size','get_screen','key_down','get_sheet','get_sheet_name','Entity','RigidBody','RTree','Scene','AnimationSequence','AnimatedSprite','load_json_file','load_json_str','load_file','load_str','vector2','parse_rect','parse_float','is_transparent','parse_point','parse_color','all_pixels','View' ]
-
+__all__ = ['Application', 'get_screen_size', 'get_screen', 'key_down', 'get_sheet', 'get_sheet_name', 'Entity',
+           'RigidBody', 'RTree', 'Scene', 'AnimationSequence', 'AnimatedSprite', 'load_json_file', 'load_json_str',
+           'load_file', 'load_str', 'vector2', 'parse_rect', 'parse_float', 'is_transparent', 'parse_point',
+           'parse_color', 'all_pixels', 'View']

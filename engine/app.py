@@ -1,8 +1,8 @@
+from typing import Optional
+
 import pygame
 import time
 from engine.keycodes import KeyCodes
-
-app = None
 
 
 # EXPORT
@@ -18,7 +18,7 @@ class Application(object):
 
     def calc_dt(self):
         cur = time.time()
-        dt = cur - self.last_ts
+        dt = max(0.001,cur - self.last_ts)
         # print("dt={}".format(dt))
         self.last_ts = cur
         self.fps = 0.9 * self.fps + 0.1 / dt
@@ -31,13 +31,13 @@ class Application(object):
     def clear(self, color=(192, 128, 255)):
         pass
 
-    def onKey(self, key):
+    def on_key(self, key):
         pass
 
-    def onClick(self, pos):
+    def on_click(self, pos):
         pass
 
-    def handleEvents(self):
+    def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
@@ -48,10 +48,13 @@ class Application(object):
         pass
 
     def run(self):
-        while self.handleEvents():
+        while self.handle_events():
             if not self.loop(self.calc_dt()):
                 break
             self.flip()
+
+
+app: Optional[Application] = None
 
 
 # EXPORT

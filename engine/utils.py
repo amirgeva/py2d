@@ -145,7 +145,7 @@ class Rect(object):
     def area(self):
         return self.width() * self.height()
 
-    def move(self, offset):
+    def move(self, offset: Point):
         self.tl = self.tl + offset
         self.br = self.br + offset
         return self
@@ -244,3 +244,12 @@ def parse_color(s):
 # EXPORT
 def all_pixels(s):
     return itertools.product(range(s.width()), range(s.height()))
+
+
+# EXPORT
+def build_point(*args) -> Point:
+    if len(args) == 1 and isinstance(args[0], Point):
+        return args[0]
+    if len(args) == 2:
+        return Point(args[0], args[1])
+    raise ValueError("Invalid point arguments")
