@@ -27,6 +27,9 @@ class Sprite:
     def get_duration(self):
         return self._duration
 
+    def set_duration(self, duration: float):
+        self._duration = duration
+
     def get_rect(self):
         return Rect(0, 0, self.width(), self.height())
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import Optional
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PIL import Image
 from cv2 import cv2
@@ -6,6 +7,8 @@ import numpy as np
 import sys
 import os
 import json
+from engine.sprite import Sprite
+
 
 clipboard = []
 
@@ -32,6 +35,14 @@ def swap_rb(img):
     return cv2.merge((b, g, r, a))
 
 
+def calculate_alpha(img):
+    rgb = img[:, :, 0:3]
+    corner = img[0, 0, 0], img[0, 0, 1], img[0, 0, 2]
+    indices = np.where(np.all(rgb == corner, axis=-1))
+    for y, x in zip(indices[0], indices[1]):
+        img[y, x, 3] = 0
+
+
 def scan_ccs(img):
     """
     Finds all connected components in the alpha channel
@@ -48,19 +59,37 @@ def scan_ccs(img):
 
 
 class AnimationFrame(object):
-    def __init__(self):
-        self.rect = None
-        self.duration = 0.0
-        self.sprite = None
+    def __init__(self, rect: QtCore.QRect, duration: float):
+        self._rect = rect
+        self._duration = duration
+        self._sprite: Optional[Sprite] = None
+
+    def get_rect(self):
+        return self._rect
+
+    def set_rect(self, rect: QtCore.QRect):
+        self._rect = rect
+
+    def get_duration(self):
+        return self._duration
+
+    def set_duration(self, duration: float):
+        self._duration = duration
+
+    def get_sprite(self):
+        return self._sprite
+
+    def set_sprite(self, sprite: Sprite):
+        self._sprite = sprite
 
 
 class SpriteSheet(QtWidgets.QWidget):
-    def __init__(self, sheet_name, parent=None):
+    def __init__(self, sheet_name, parent: Optional["MainWindow"] = None):
         super().__init__(parent)
-        self.mainwin = parent
-        self.image = None
+        self.main_window = parent
+        self.image: Optional[np.ndarray] = None
         self.sheet = None
-        self.scale = 4
+        self.scale = 1.0
         self.rectangles = []
         self.empty_rectangles = []
         self.texture = None
@@ -154,6 +183,8 @@ class SpriteSheet(QtWidgets.QWidget):
         image = Image.open(sheet_name).convert('RGBA')
         self.image = np.array(image)
         h, w, c = self.image.shape
+        if np.count_nonzero(self.image[:, :, 3]) == (h * w):
+            calculate_alpha(self.image)
         pitch = w * c
         self.rectangles = []
         self.sheet = QtGui.QImage(self.image.data, w, h, pitch, QtGui.QImage.Format_RGBA8888)
@@ -212,7 +243,7 @@ class SpriteSheet(QtWidgets.QWidget):
                     self.sel_rect = sel_rect
                     self.clear()
                 else:
-                    self.mainwin.on_rect(sel_rect)
+                    self.main_window.on_rect(sel_rect)
             if event.button() == QtCore.Qt.RightButton:
                 self.sel_rect = sel_rect
                 self.context_menu(event)
@@ -242,15 +273,15 @@ class SpriteSheet(QtWidgets.QWidget):
 
 
 class SequencesList(QtWidgets.QListWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional["MainWindow"] = None):
         super().__init__(parent)
-        self.mainwin = parent
+        self.main_window: MainWindow = parent
         self.itemSelectionChanged.connect(self.on_selection)
 
     def on_selection(self):
         sel = self.selectedItems()
         if len(sel) == 1:
-            self.mainwin.set_current_sequence(sel[0].text())
+            self.main_window.set_current_sequence(sel[0].text())
 
     def contextMenuEvent(self, event):
         menu = QtWidgets.QMenu(self)
@@ -259,7 +290,7 @@ class SequencesList(QtWidgets.QListWidget):
         if action == new_action:
             (name, ok) = QtWidgets.QInputDialog.getText(self, "Sequence Name", "Name")
             if ok:
-                self.mainwin.add_sequence(name)
+                self.main_window.add_sequence(name)
                 row = self.count()
                 self.addItem(name)
                 item = self.item(row)
@@ -274,20 +305,20 @@ class SequencesList(QtWidgets.QListWidget):
         key = event.key()
         if key == QtCore.Qt.Key_Delete:
             for item in self.selectedItems():
-                self.mainwin.remove_sequence(item.text())
+                self.main_window.remove_sequence(item.text())
                 # self.removeItemWidget(item)
 
 
 class SequenceRectList(QtWidgets.QListWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional["MainWindow"] = None):
         super().__init__(parent)
-        self.mainwin = parent
+        self.main_window = parent
         self.itemDoubleClicked.connect(self.onItemDoubleClicked)
         self.itemSelectionChanged.connect(self.on_selection)
 
     def on_selection(self):
         sel = self.currentRow()
-        self.mainwin.set_current_frame(sel)
+        self.main_window.set_current_frame(sel)
 
     def add_rect(self, rect, duration):
         row = self.count()
@@ -298,17 +329,17 @@ class SequenceRectList(QtWidgets.QListWidget):
     def update_items(self, seq):
         self.clear()
         for frame in seq:
-            self.add_rect(frame._rect, frame._duration)
+            self.add_rect(frame.get_rect(), frame.get_duration())
 
     # noinspection PyPep8Naming
     def onItemDoubleClicked(self, item):
-        self.mainwin.edit_duration(self.row(item))
+        self.main_window.edit_duration(self.row(item))
 
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_Delete:
             for item in self.selectedItems():
-                self.mainwin.remove_sprite(self.row(item))
+                self.main_window.remove_sprite(self.row(item))
 
 
 class AnimationWidget(QtWidgets.QWidget):
@@ -397,8 +428,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.animation_frame += 1
                 if self.animation_frame >= len(seq):
                     self.animation_frame = 0
-                self.frame_time_left = seq[self.animation_frame]._duration
-                self.animation.set_source_rect(frame._rect)
+                self.frame_time_left = seq[self.animation_frame].get_duration()
+                self.animation.set_source_rect(frame.get_rect())
             else:
                 self.animation_frame = 0
 
@@ -410,7 +441,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.current_sequence:
             seq = self.seq_dict[self.current_sequence]
             if frame_index < len(seq):
-                self.sheet.set_highlight_rect(seq[frame_index]._rect)
+                self.sheet.set_highlight_rect(seq[frame_index].get_rect())
             else:
                 self.sheet.clear_highlight()
 
@@ -432,20 +463,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def edit_duration(self, index):
         seq = self.seq_dict[self.current_sequence]
-        duration = float(seq[index]._duration)
+        duration = float(seq[index].get_duration())
         (duration, ok) = QtWidgets.QInputDialog.getDouble(self, 'Duration', 'Duration', duration)
         if ok:
-            seq[index]._duration = duration
+            seq[index].set_duration(duration)
             self.sprites.update_items(seq)
 
     def on_rect(self, r):
         si = self.sequences.selectedItems()
         if len(si) == 1:
             name = si[0].text()
-            frame = AnimationFrame()
-            frame.rect = QtCore.QRect(r)
-            frame.duration = 0.1
-            # frame.sprite = Subsheet(self.sheet.texture, r)
+            frame = AnimationFrame(QtCore.QRect(r), 0.1)
             self.seq_dict[name].append(frame)
             self.sprites.update_items(self.seq_dict[name])
 
@@ -549,11 +577,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.sequences.addItem(name)
                 frames = []
                 for frame_dict in seq.get('Frames'):
-                    frame = AnimationFrame()
                     r = [int(c) for c in frame_dict.get('Rect').strip().split(',')]
-                    frame.duration = frame_dict.get('Duration')
+                    duration = frame_dict.get('Duration')
                     r = QtCore.QRect(r[0], r[1], r[2] - r[0], r[3] - r[1])
-                    frame.rect = r
+                    frame = AnimationFrame(r, duration)
                     # frame.sprite = Subsheet(self.sheet.texture, r)
                     frames.append(frame)
                 self.seq_dict[name] = frames
@@ -574,16 +601,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_save(self):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save", os.getcwd(), "*.json", "*.json")
         if filename:
-            imagename = filename.replace('.json', '.png')
-            if not self.sheet.save_image(imagename):
+            image_name = filename.replace('.json', '.png')
+            if not self.sheet.save_image(image_name):
                 return
-            root = {"Image": os.path.basename(imagename), "Flags": ''}
+            root = {"Image": os.path.basename(image_name), "Flags": ''}
             sequences = []
             for name in self.seq_dict:
                 frames = []
                 seq = self.seq_dict.get(name)
                 for frame in seq:
-                    frames.append({"Rect": comma(frame._rect), "Duration": frame._duration})
+                    frames.append({"Rect": comma(frame.get_rect()), "Duration": frame.get_duration()})
                 sequences.append({"Name": name, "BaseVelocity": 1.0, "Frames": frames})
             root['Sequences'] = sequences
             open(filename, 'w').write(json.dumps(root, indent=4))
